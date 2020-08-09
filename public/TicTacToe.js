@@ -1,13 +1,14 @@
 class TicTacToe {
-  constructor(isPlayerX, height, width, updateServerMove) {
+  constructor(playerGoesFirst, height, width, uid, lobbyId) {
     this.height = height;
     this.width = width;
-    this.isPlayerX = isPlayerX;
-    this.isYourTurn = true;
+    this.playerIsX = false;
+    this.isYourTurn = playerGoesFirst;
     this.lineWidth = 10;
     this.player1Moves = [];
     this.player2Moves = [];
-    this.updateServerMove = updateServerMove;
+    this.uid = uid;
+    this.lobbyId = lobbyId;
     this.ctx;
     this.createGameBoard();
     this.drawGameBoardLines();
@@ -21,6 +22,10 @@ class TicTacToe {
     return this.canvas;
   }
 
+  playerIsX(playerIsX) {
+    this.playerIsX = playerIsX;
+  }
+
   createGameBoard() {
     this.canvas = document.createElement("canvas");
     this.canvas.height = this.height;
@@ -32,12 +37,18 @@ class TicTacToe {
   drawTurn(x, y) {
     if (this.isYourTurn) {
       this.player1Moves.push(`${x},${y}`);
-      console.log(this.player1Moves);
-      this.drawX(x, y);
+      if (this.playerIsX) {
+        this.drawX(x, y);
+      } else {
+        this.drawO(x, y);
+      }
     } else {
       this.player2Moves.push(`${x},${y}`);
-      console.log(this.player2Moves);
-      this.drawO(x, y);
+      if (!this.playerIsX) {
+        this.drawX(x, y);
+      } else {
+        this.drawO(x, y);
+      }
     }
     this.checkWin();
   }

@@ -12,6 +12,7 @@ app.use(express.json()); // built-in middleware
 app.use(multer().none()); // requires the "multer" module
 
 app.post('/enterLobby', (req, res) => {
+  console.log("Enter lobby request:",req.body);
   res.send("Will be implemented");
 });
 

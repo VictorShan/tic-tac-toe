@@ -3,43 +3,52 @@
   window.addEventListener("load", init);
 
   initFirebase();
-  let game = new TicTacToe(true, 500, 500, () => {});
+  let game;
 
   function init() {
     addEventListeners();
     signInAnonymously();
-    setupGame();
   }
 
   function addEventListeners() {
     document.getElementById("reset-id").addEventListener('click', e => {
       firebase.auth().signOut();
       signInAnonymously();
+      game = null;
     });
     document.getElementById("enter-lobby").addEventListener("submit", enterLobby);
   }
 
-  function setupGame() {
+  function setupGame(uid, lobbyId, playerGoesFirst) {
+    game = new TicTacToe(playerGoesFirst, 500, 500, uid, lobbyId);
     console.log(game);
     let gameBoard = game.gameBoard;
     //gameBoard.classList.add("hidden");
-    document.getElementById("enter-lobby").classList.add("hidden");
-    document.querySelector("main").appendChild(gameBoard);
+    //document.getElementById("enter-lobby").classList.add("hidden");
+    let main = document.querySelector("main");
+    main.appendChild(gameBoard);
   }
 
   async function enterLobby(e) {
       e.preventDefault();
       let data = new FormData(document.getElementById("enter-lobby"));
-      console.log("lobby ", data.get("lobby"));
+      data.append("uid", firebase.auth().currentUser.uid);
+      console.log("lobby", data.get("lobby"));
+      let res;
       try {
-        let res = await fetch("/enterLobby", {method: "POST", body: data})
+        res = await fetch("/enterLobby", {method: "POST", body: data})
         checkStatus(res);
         res = await res.text();
         console.log(res);
-        enterGameMode();
       } catch (error) {
         console.error(error);
       }
+      // TODO: REMOVE
+      res = {
+        lobbyId: 'hello',
+        playerGoesFirst: true
+      }
+      setupGame(firebase.auth().currentUser.uid, res.lobbyId, res.playerGoesFirst);
   }
 
   function checkStatus(res) {
