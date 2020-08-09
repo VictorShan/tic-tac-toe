@@ -1,4 +1,4 @@
-class TicTacToeBoard {
+class TicTacToe {
   constructor(isPlayerX, height, width, updateServerMove) {
     this.height = height;
     this.width = width;

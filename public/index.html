@@ -11,15 +11,18 @@
     <script src="https://www.gstatic.com/firebasejs/7.17.2/firebase-analytics.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.17.2/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.17.2/firebase-firestore.js"></script> 
-    <script src="https://www.gstatic.com/firebasejs/ui/4.6.1/firebase-ui-auth.js"></script>
-    <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/4.6.1/firebase-ui-auth.css" />
     <script src="auth.js"></script>
-    <script src="game.js"></script>
+    <script src="TicTacToe.js"></script>
     <script src="index.js"></script>
   </head>
   <body>
-    <header><h1>Tic-Tac-Toe!</h1></header>
-    <div ></div>
+    <header>
+      <h1>Tic-Tac-Toe!</h1>
+      <div id="sign-in-status"></div>
+      <div id="sign-in"></div>
+      <pre id="account-details"></pre>
+      <button id="reset-id">Reset ID</button>
+    </header>
     <main>
       <form id="enter-lobby">
         <label>
