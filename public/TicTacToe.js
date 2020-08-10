@@ -84,6 +84,8 @@ class TicTacToe {
   }
 
   checkWin() {
+    console.log("Checking win");
+    console.log(this.winner);
     if (!this.winner)
       return;
     if (this.winner === this.uid) {
@@ -122,6 +124,7 @@ class TicTacToe {
   }
 
   clickTurn(canvas, e) {
+    console.log("Click", this);
     let canvasPos = canvas.getBoundingClientRect();
     let xMousePos = e.clientX - canvasPos.left;
     let yMousePos = e.clientY - canvasPos.top; 
@@ -213,16 +216,17 @@ class TicTacToe {
     if (game.opponentUid === undefined && data.users[1]) {
       game.opponentUid = data.users[1];
     }
+    if (!data.gameOn) {
+      game.winningLine = JSON.parse(data.history.lastWinner.path);
+      game.winner = data.history.lastWinner.uid;
+    }
     if (data.history.lastMove.uid === game.opponentUid) {
       game.isYourTurn = true;
       game.drawTurn(data.history.lastMove.x,
                     data.history.lastMove.y,
                     data.history.lastMove.uid);
     }
-    if (!data.gameOn) {
-      game.winningLine = JSON.parse(data.history.lastWinner.path);
-      game.winner = data.history.lastWinner.uid;
-    }
+    console.log(data);
     game.docData = data;
   }
 
