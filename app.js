@@ -24,7 +24,6 @@ app.use(express.json()); // built-in middleware
 app.use(multer().none()); // requires the "multer" module
 
 app.post('/enterLobby', async (req, res) => {
-  console.log("Enter lobby request:",req.body);
   const doc = await db.collection('lobbies').doc(req.body.lobbyId).get();
   let result;
   if (!doc.exists) {
@@ -41,7 +40,16 @@ app.post('/clearBoard', () => {
 });
 
 app.post('/makeMove', async (req, res) => {
-  res.send("will be implemented");
+  try {
+    const doc = await db.collection('lobbies').doc(req.body.lobbyId).get();
+    if (!doc.exists)
+      res.status(404).send("Lobby not found")
+    let result = await newMove(req.body, doc.data());
+    res.status(result.status).send(result.message);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send("Server error");
+  }
 })
 
 
@@ -54,6 +62,7 @@ app.listen(PORT);
 
 async function createLobby(lobbyId, uid) {
   const data = {
+    gameOn: true,
     users: [uid],
     history: {
       [uid]: [],
@@ -116,4 +125,73 @@ async function enterLobby(data, lobbyId, uid) {
       message: "Server error"
     }
   }
+}
+
+async function newMove(reqBody, data) {
+  if (!data.users.includes(reqBody.uid) || data.history.lastMove.uid === reqBody.uid)
+    return { status: 406, message: "Not your turn"};
+  if (!data.gameOn) {
+    return { status: 423, message: "Game has ended"};
+  }
+  data.history[reqBody.uid] = [...data.history[reqBody.uid], `${reqBody.x},${reqBody.y}`];
+  let winner = determineWinner(data);
+  let updateData = {
+    [`history.${reqBody.uid}`]: data.history[reqBody.uid],
+    'history.lastMove': {
+      time:admin.firestore.FieldValue.serverTimestamp(),
+      uid: reqBody.uid,
+      x: reqBody.x,
+      y: reqBody.y,
+      lastWinner: winner ? winner : null
+    }
+  }
+  if (winner === null) {
+    // Do nothing
+  } else if (winner === false) {
+    updateData.gameOn = false;
+  } else if (winner === data.users[0]) {
+    newWinner(data, updateData, data.users[0]);
+  } else if (winner === data.users[1]) {
+    newWinner(data, updateData, data.users[1]);
+  } else {
+    throw Error("Invalid state");
+  }
+  await db.collection('lobbies').doc(reqBody.lobbyId).update(updateData);
+  return { status: 200, message:"Successfully Moved"}  
+}
+
+function determineWinner(docData) {
+  if (winCondition(docData.history[docData.users[0]])) {
+    return docData.users[0];
+  } else if (winCondition(docData.history[docData.users[1]])) {
+    return docData.users[1];
+  } else if (docData.history[docData.users[0]].length + docData.history[docData.users[1]].length === 9) {
+    return false;
+  }
+  console.log(docData.history);
+  console.log(docData.history[docData.users[0]].length + docData.history[docData.users[1]].length);
+  console.assert(docData.history[docData.users[0]].length + docData.history[docData.users[1]].length < 9,
+    "There are, impossibly, more or equal to nine moves in a tic tac toe game.");
+  return null;
+}
+
+function winCondition(list) {
+  if (list.includes('0,0') && list.includes('1,1') && list.includes('2,2')) {
+    return true;
+  } else if (list.includes('0,2') && list.includes('1,1') && list.includes('2,0')) {
+    return true;
+  }
+  for (let i = 0; i < 3; i++) {
+    if (list.includes(`0,${i}`) && list.includes(`1,${i}`) && list.includes(`2,${i}`)) {
+      return true;
+    } else if (list.includes(`${i},0`) && list.includes(`${i},1`) && list.includes(`${i},2`)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function newWinner(docData, updateData, uid) {
+  updateData[`score.${uid}`] = docData.score[uid] + 1;
+  updateData.gameOn = false;
 }

@@ -4,6 +4,7 @@ class TicTacToe {
     this.width = width;
     this.playerIsX = true;
     this.db = db;
+    this.dbDoc = {};
     this.lineWidth = 10;
     this.player1Moves = [];
     this.player2Moves = [];
@@ -33,9 +34,11 @@ class TicTacToe {
     if (this.uid === uid) {
       this.player1Moves.push(`${x},${y}`);
       this.drawXorO(x, y, this.playerIsX);
-    } else {
+    } else if (this.opponentUid === uid) {
       this.player2Moves.push(`${x},${y}`);
       this.drawXorO(x, y, !this.playerIsX);
+    } else {
+      console.log(uid, "made a move but who is that?");
     }
     this.checkWin();
   }
@@ -141,6 +144,7 @@ class TicTacToe {
   }
 
   clickTurn(canvas, e) {
+    console.log("Clicked", this);
     let canvasPos = canvas.getBoundingClientRect();
     let xMousePos = e.clientX - canvasPos.left;
     let yMousePos = e.clientY - canvasPos.top; 
@@ -152,27 +156,57 @@ class TicTacToe {
         console.log("Already played here!");
         return;
       }
-      this.drawTurn(x, y, this.uid);
-      this.isYourTurn = false;
+      this.makeMoveServer(x, y);
+    }
+  }
+
+  async makeMoveServer(x, y) {
+    console.log("Trying to go:", x, y);
+    let data = {
+      uid: this.uid,
+      lobbyId: this.lobbyId,
+      x: x,
+      y: y
+    }
+    try {
+      let result = await fetch('/makeMove', {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)});
+      if (result.status === 200) {
+        this.drawTurn(x, y, this.uid);
+        this.isYourTurn = false;
+      } else {
+        alert('Invalid move');
+        console.log(result);
+      }
+    } catch (error) {
+      console.log("Couldn't make move.")
+      console.error(error);
     }
   }
 
 
   async setupServer() {
+    console.log("Setting up server");
     await this.drawCurrentGame();
     this.setupServerUpdates();
   }
   async drawCurrentGame() {
+    console.log("Drawing current game");
     const doc = await this.db.collection('lobbies').doc(this.lobbyId).get();
     const data = doc.data();
     this.opponentUid = data.users[0] === this.uid ? data.users[1] : data.users[0];
     if (this.opponentUid === undefined) {
+      this.isYourTurn = true;
       return;
     }
     console.log(this.uid, this.opponentUid);
     data.history[this.uid].forEach(e => this.drawTurnFromString(this.uid, e));
     data.history[this.opponentUid].forEach(e => this.drawTurnFromString(this.opponentUid, e));
-    if (data.history.lastMove.uid === null) {
+    if (!data.history.lastMove.uid) {
       this.isYourTurn = data.users[0] === this.uid;
     } else {
       this.isYourTurn = data.history.lastMove.uid === this.opponentUid;
@@ -186,6 +220,7 @@ class TicTacToe {
   }
 
   setupServerUpdates() {
+    console.log("Setting up server updates");
     console.log(this.lobbyId);
     this.serverObserver = this.db.collection('lobbies')
                                   .doc(this.lobbyId)
@@ -198,13 +233,15 @@ class TicTacToe {
                                     const data = doc.data();
                                     if (this.opponentUid === undefined && data.users[1]) {
                                       this.opponentUid = data.users[1];
-                                      this.isYourTurn = true;
                                     }
                                     if (data.history.lastMove.uid === this.opponentUid) {
                                       console.log("Opponent moved");
                                       this.isYourTurn = true;
-                                      this.drawTurn(data.x, data.y, data.uid);
+                                      this.drawTurn(data.history.lastMove.x,
+                                                    data.history.lastMove.y,
+                                                    data.history.lastMove.uid);
                                     }
+                                    this.docData = doc;
                                   });
   }
 
