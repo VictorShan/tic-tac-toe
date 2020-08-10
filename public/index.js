@@ -12,7 +12,6 @@
 
   function init() {
     addEventListeners();
-    signInAnonymously();
   }
 
   function addEventListeners() {
@@ -25,12 +24,14 @@
   }
 
   function setupGame(uid, lobbyId) {
-    game = new TicTacToe(db, 500, 500, uid, lobbyId);
-    console.log(game);
-    let gameBoard = game.gameBoard;
-    //gameBoard.classList.add("hidden");
-    //document.getElementById("enter-lobby").classList.add("hidden");
+    game = new TicTacToe(db, 500, 500, uid, lobbyId);    
     let main = document.querySelector("main");
+    let oldBoard = document.getElementById("game-board");
+    if (oldBoard) {
+      main.removeChild(oldBoard);
+    }
+    let gameBoard = game.gameBoard;
+    gameBoard.id = "game-board";
     main.appendChild(gameBoard);
   }
 
@@ -39,17 +40,14 @@
       let data = new FormData(document.getElementById("enter-lobby"));
       let uid = firebase.auth().currentUser.uid;
       data.append("uid", uid);
-      console.log("lobbyId", data.get("lobby"));
       let res;
       try {
         res = await fetch("/enterLobby", {method: "POST", body: data})
         checkStatus(res);
         res = await res.json();
-        console.log(res);
       } catch (error) {
         console.error(error);
       }
-      // TODO: REMOVE
       setupGame(uid, res.lobbyId);
   }
 
@@ -77,13 +75,14 @@
     firebase.initializeApp(firebaseConfig);
     firebase.analytics();
     db = firebase.firestore();
+    signInAnonymously();
   }
 
   function signInAnonymously() {
     firebase.auth().signInAnonymously().catch((error) => {
       let errorCode = error.code;
       let errorMessage = error.message;
-      console.log(errorCode, errorMessage);
+      console.error(errorCode, errorMessage);
     })
   }
 })();

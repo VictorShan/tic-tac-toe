@@ -6,14 +6,11 @@
         // User is signed in.
         var uid = user.uid;
         user.getIdToken().then(function(accessToken) {;
-          document.getElementById('account-details').textContent = JSON.stringify({
-            uid: uid,
-            accessToken: accessToken
-          }, null, '  ');
+          document.getElementById('uid').textContent = "User ID:" + uid;
         });
       } else {
         // User is signed out.
-        document.getElementById('account-details').textContent = 'null';
+        document.getElementById('uid').textContent = 'null';
       }
     }, function(error) {
       console.log(error);
