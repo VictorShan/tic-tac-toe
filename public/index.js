@@ -20,7 +20,7 @@
   }
 
   function setupGame(uid, lobbyId, playerGoesFirst) {
-    game = new TicTacToe(playerGoesFirst, 500, 500, uid, lobbyId);
+    game = new TicTacToe(playerGoesFirst, 500, 500, uid, lobbyId, true);
     console.log(game);
     let gameBoard = game.gameBoard;
     //gameBoard.classList.add("hidden");
