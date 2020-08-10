@@ -1,29 +1,23 @@
 class TicTacToe {
-  constructor(playerGoesFirst, height, width, uid, lobbyId) {
+  constructor(db, height, width, uid, lobbyId) {
     this.height = height;
     this.width = width;
-    this.playerIsX = false;
-    this.isYourTurn = playerGoesFirst;
+    this.playerIsX = true;
+    this.db = db;
     this.lineWidth = 10;
     this.player1Moves = [];
     this.player2Moves = [];
     this.uid = uid;
+    this.opponentUid = null;
     this.lobbyId = lobbyId;
+    this.isYourTurn = false;
     this.ctx;
     this.createGameBoard();
-    this.drawGameBoardLines();
-  }
-
-  setYourTurn(isYourTurn) {
-    this.isYourTurn = isYourTurn;
+    this.setupServer();
   }
 
   get gameBoard() {
     return this.canvas;
-  }
-
-  playerIsX(playerIsX) {
-    this.playerIsX = playerIsX;
   }
 
   createGameBoard() {
@@ -32,25 +26,26 @@ class TicTacToe {
     this.canvas.width = this.width;
     this.canvas.addEventListener('click', (e) => this.clickTurn(this.canvas, e));
     this.ctx = this.canvas.getContext('2d');
+    this.drawGameBoardLines();
   }
 
-  drawTurn(x, y) {
-    if (this.isYourTurn) {
+  drawTurn(x, y, uid) {
+    if (this.uid === uid) {
       this.player1Moves.push(`${x},${y}`);
-      if (this.playerIsX) {
-        this.drawX(x, y);
-      } else {
-        this.drawO(x, y);
-      }
+      this.drawXorO(x, y, this.playerIsX);
     } else {
       this.player2Moves.push(`${x},${y}`);
-      if (!this.playerIsX) {
-        this.drawX(x, y);
-      } else {
-        this.drawO(x, y);
-      }
+      this.drawXorO(x, y, !this.playerIsX);
     }
     this.checkWin();
+  }
+
+  drawXorO(x, y, drawX) {
+    if (drawX) {
+      this.drawX(x, y);
+    } else {
+      this.drawO(x, y);
+    }
   }
 
   calculateCoordinates(x, y) {
@@ -61,9 +56,9 @@ class TicTacToe {
     return [x, y, width, height]
   }
 
-  drawX(x1, y1) {
-    let [x, y, width, height] = this.calculateCoordinates(x1, y1);
-    //this.updateServerMove(x, y);
+  drawX(x, y) {
+    let width, height;
+    [x, y, width, height] = this.calculateCoordinates(x, y);
     this.ctx.strokeStyle = 'black';
     this.ctx.lineWidth = this.lineWidth / 2;
     this.ctx.beginPath();
@@ -149,7 +144,7 @@ class TicTacToe {
     let canvasPos = canvas.getBoundingClientRect();
     let xMousePos = e.clientX - canvasPos.left;
     let yMousePos = e.clientY - canvasPos.top; 
-    if (this.isYourTurn || true) {
+    if (this.isYourTurn) {
       let x = Math.floor(xMousePos / (this.width / 3));
       let y = Math.floor(yMousePos / (this.height / 3));
       console.log("Clicked:", x, y);
@@ -157,9 +152,60 @@ class TicTacToe {
         console.log("Already played here!");
         return;
       }
-      this.drawTurn(x, y);
-      this.isYourTurn = !this.isYourTurn;
+      this.drawTurn(x, y, this.uid);
+      this.isYourTurn = false;
     }
+  }
+
+
+  async setupServer() {
+    await this.drawCurrentGame();
+    this.setupServerUpdates();
+  }
+  async drawCurrentGame() {
+    const doc = await this.db.collection('lobbies').doc(this.lobbyId).get();
+    const data = doc.data();
+    this.opponentUid = data.users[0] === this.uid ? data.users[1] : data.users[0];
+    if (this.opponentUid === undefined) {
+      return;
+    }
+    console.log(this.uid, this.opponentUid);
+    data.history[this.uid].forEach(e => this.drawTurnFromString(this.uid, e));
+    data.history[this.opponentUid].forEach(e => this.drawTurnFromString(this.opponentUid, e));
+    if (data.history.lastMove.uid === null) {
+      this.isYourTurn = data.users[0] === this.uid;
+    } else {
+      this.isYourTurn = data.history.lastMove.uid === this.opponentUid;
+    }
+  }
+
+  drawTurnFromString(uid, coordinates) {
+    let coords = coordinates.split(',');
+    console.log("Point from string:", coords);
+    this.drawTurn(coords[0], coords[1], uid);
+  }
+
+  setupServerUpdates() {
+    console.log(this.lobbyId);
+    this.serverObserver = this.db.collection('lobbies')
+                                  .doc(this.lobbyId)
+                                  .onSnapshot({
+                                    includeMetadataChanges: true
+                                  }, doc => {
+                                    if (!doc.exists)
+                                      return;
+                                    console.log("Snapshot ran on ", this.lobbyId);
+                                    const data = doc.data();
+                                    if (this.opponentUid === undefined && data.users[1]) {
+                                      this.opponentUid = data.users[1];
+                                      this.isYourTurn = true;
+                                    }
+                                    if (data.history.lastMove.uid === this.opponentUid) {
+                                      console.log("Opponent moved");
+                                      this.isYourTurn = true;
+                                      this.drawTurn(data.x, data.y, data.uid);
+                                    }
+                                  });
   }
 
   drawGameBoardLines() {
@@ -184,5 +230,9 @@ class TicTacToe {
     //  _|_|_
     //   | |
     this.ctx.fillRect(0, this.height * 2/3 - this.lineWidth/2, this.width, this.lineWidth);
+  }
+
+  deleteGame() {
+    this.serverObserver();
   }
 }

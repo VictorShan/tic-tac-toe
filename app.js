@@ -8,6 +8,7 @@ const firebase = require('firebase');
 const Firestore = require('firebase/firestore');
 const admin = require('firebase-admin');
 const serviceAccount = require("./serviceAccountKey.json");
+const { restart } = require('nodemon');
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: "https://tic-tac-toe-82af8.firebaseio.com"
@@ -24,23 +25,22 @@ app.use(multer().none()); // requires the "multer" module
 
 app.post('/enterLobby', async (req, res) => {
   console.log("Enter lobby request:",req.body);
-  let doc = await db.collection('lobbies').doc(req.body.lobby).get();
+  const doc = await db.collection('lobbies').doc(req.body.lobbyId).get();
+  let result;
   if (!doc.exists) {
-    await createLobby(req.body.lobby, req.body.uid)
-    doc = await db.collection('lobbies').doc(req.body.lobby).get();
-    console.log("Created Lobby:", doc.data());
+    result = await createLobby(req.body.lobbyId, req.body.uid)
   } else {
-    console.log("Document data:", doc.data());
-    await enterLobby(doc.data(), req.body.lobby, req.body.uid);
-  } 
-  res.send("Will be implemented");
+    result = await enterLobby(doc.data(), req.body.lobbyId, req.body.uid);
+  }
+  result.lobbyId = req.body.lobbyId;
+  res.status(result.status).json(result);
 });
 
 app.post('/clearBoard', () => {
   res.send("will be implemented")
 });
 
-app.post('/makeMove', (req, res) => {
+app.post('/makeMove', async (req, res) => {
   res.send("will be implemented");
 })
 
@@ -55,28 +55,65 @@ app.listen(PORT);
 async function createLobby(lobbyId, uid) {
   const data = {
     users: [uid],
-    moves: {
+    history: {
       [uid]: [],
       lastMove: {
         time: admin.firestore.FieldValue.serverTimestamp()
-      }
+      },
+      lastWinner: null
     },
     score: {
       [uid]: 0
+    }    
+  }
+  try {
+    await db.collection('lobbies').doc(lobbyId).set(data);
+    return {
+      status: 201,
+      message: `Lobby ${lobbyId} created`
+    }
+  } catch (error) {
+    console.error(error);
+    return  {
+      status: 500,
+      message: "Server error"
     }
   }
-  await db.collection('lobbies').doc(lobbyId).set(data);
 }
 
 async function enterLobby(data, lobbyId, uid) {
-  if (admin.firestore.Timestamp.now().seconds -
-      data.moves.lastMove.time.seconds > 24*60*60) { // Last move was more than 24hrs ago
-    createLobby(lobbyId, uid);
-  } else {
-    data.users.push(uid);
-    data.score[uid] = 0;
-    data.moves[uid] = [];
-    data.score[uid] = 0;
-    await db.collection('lobbies').doc(lobbyId).set(data);
+  try {
+    if (admin.firestore.Timestamp.now().seconds -
+        data.history.lastMove.time.seconds > 1*60*60) { // Last move was more than 3hrs ago
+      createLobby(lobbyId, uid);
+    } else if (!data.users.includes(uid)) {
+      if (data.users.length < 2) {
+        data.users.push(uid);
+        data.score[uid] = 0;
+        data.history[uid] = [];
+        data.score[uid] = 0;
+        await db.collection('lobbies').doc(lobbyId).set(data);
+      } else {
+        return {
+          status: 423,
+          message: "Two player are already in this lobby! " +
+                    "Lobby will open after 1hr of idle time."
+        }
+      }
+    } else {
+      await db.collection('lobbies').doc(lobbyId).update({
+        "history.lastMove.time": admin.firestore.FieldValue.serverTimestamp()
+      });
+    }
+    return {
+      status: 200,
+      message: "Successfully joined lobby " + lobbyId
+    }
+  } catch (error) {
+    console.error(error);
+    return {
+      status: 500,
+      message: "Server error"
+    }
   }
 }

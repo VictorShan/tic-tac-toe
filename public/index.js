@@ -2,8 +2,13 @@
 (function() {
   window.addEventListener("load", init);
 
-  initFirebase();
+  // Global vars
+
   let game;
+  let db;
+
+
+  initFirebase();
 
   function init() {
     addEventListeners();
@@ -19,8 +24,8 @@
     document.getElementById("enter-lobby").addEventListener("submit", enterLobby);
   }
 
-  function setupGame(uid, lobbyId, playerGoesFirst) {
-    game = new TicTacToe(playerGoesFirst, 500, 500, uid, lobbyId, true);
+  function setupGame(uid, lobbyId) {
+    game = new TicTacToe(db, 500, 500, uid, lobbyId, true);
     console.log(game);
     let gameBoard = game.gameBoard;
     //gameBoard.classList.add("hidden");
@@ -32,23 +37,20 @@
   async function enterLobby(e) {
       e.preventDefault();
       let data = new FormData(document.getElementById("enter-lobby"));
-      data.append("uid", firebase.auth().currentUser.uid);
-      console.log("lobby", data.get("lobby"));
+      let uid = firebase.auth().currentUser.uid;
+      data.append("uid", uid);
+      console.log("lobbyId", data.get("lobby"));
       let res;
       try {
         res = await fetch("/enterLobby", {method: "POST", body: data})
         checkStatus(res);
-        res = await res.text();
+        res = await res.json();
         console.log(res);
       } catch (error) {
         console.error(error);
       }
       // TODO: REMOVE
-      res = {
-        lobbyId: 'hello',
-        playerGoesFirst: true
-      }
-      setupGame(firebase.auth().currentUser.uid, res.lobbyId, res.playerGoesFirst);
+      setupGame(uid, res.lobbyId);
   }
 
   function checkStatus(res) {
@@ -74,6 +76,7 @@
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     firebase.analytics();
+    db = firebase.firestore();
   }
 
   function signInAnonymously() {
