@@ -134,64 +134,69 @@ async function newMove(reqBody, data) {
     return { status: 423, message: "Game has ended"};
   }
   data.history[reqBody.uid] = [...data.history[reqBody.uid], `${reqBody.x},${reqBody.y}`];
-  let winner = determineWinner(data);
+  let [winner, path] = determineWinner(data);
   let updateData = {
     [`history.${reqBody.uid}`]: data.history[reqBody.uid],
     'history.lastMove': {
       time:admin.firestore.FieldValue.serverTimestamp(),
       uid: reqBody.uid,
       x: reqBody.x,
-      y: reqBody.y,
-      lastWinner: winner ? winner : null
+      y: reqBody.y
     }
   }
+
   if (winner === null) {
-    // Do nothing
   } else if (winner === false) {
     updateData.gameOn = false;
   } else if (winner === data.users[0]) {
-    newWinner(data, updateData, data.users[0]);
+    newWinner(data, updateData, data.users[0], path);
   } else if (winner === data.users[1]) {
-    newWinner(data, updateData, data.users[1]);
+    newWinner(data, updateData, data.users[1], path);
   } else {
     throw Error("Invalid state");
   }
   await db.collection('lobbies').doc(reqBody.lobbyId).update(updateData);
-  return { status: 200, message:"Successfully Moved"}  
+  return { status: 200 }  
 }
 
 function determineWinner(docData) {
-  if (winCondition(docData.history[docData.users[0]])) {
-    return docData.users[0];
-  } else if (winCondition(docData.history[docData.users[1]])) {
-    return docData.users[1];
+  // path is getting assigned in the if statement and then its value is tested
+  let path;
+  if (path = winCondition(docData.history[docData.users[0]])) {
+    return [docData.users[0], path];
+  } else if (path = winCondition(docData.history[docData.users[1]])) {
+    return [docData.users[1], path];
   } else if (docData.history[docData.users[0]].length + docData.history[docData.users[1]].length === 9) {
-    return false;
+    return [false, null];
   }
   console.log(docData.history);
   console.log(docData.history[docData.users[0]].length + docData.history[docData.users[1]].length);
   console.assert(docData.history[docData.users[0]].length + docData.history[docData.users[1]].length < 9,
     "There are, impossibly, more or equal to nine moves in a tic tac toe game.");
-  return null;
+  return [null, null];
 }
 
 function winCondition(list) {
   if (list.includes('0,0') && list.includes('1,1') && list.includes('2,2')) {
-    return true;
+    return [[0,0],[1,1],[2,2]];
   } else if (list.includes('0,2') && list.includes('1,1') && list.includes('2,0')) {
-    return true;
+    return [[0,2], [1,1], [2,0]];
   }
   for (let i = 0; i < 3; i++) {
     if (list.includes(`0,${i}`) && list.includes(`1,${i}`) && list.includes(`2,${i}`)) {
-      return true;
+      return [[0,i], [1,i],[2,i]];
     } else if (list.includes(`${i},0`) && list.includes(`${i},1`) && list.includes(`${i},2`)) {
-      return true;
+      return [[i,0], [i,1], [i,2]];
     }
   }
   return false;
 }
 
-function newWinner(docData, updateData, uid) {
+function newWinner(docData, updateData, uid, path) {
   updateData[`score.${uid}`] = docData.score[uid] + 1;
   updateData.gameOn = false;
+  updateData[`history.lastWinner`] = {
+    path: JSON.stringify(path),
+    uid: uid
+  }
 }

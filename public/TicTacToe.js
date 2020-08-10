@@ -6,8 +6,6 @@ class TicTacToe {
     this.db = db;
     this.dbDoc = {};
     this.lineWidth = 10;
-    this.player1Moves = [];
-    this.player2Moves = [];
     this.uid = uid;
     this.opponentUid = null;
     this.lobbyId = lobbyId;
@@ -32,13 +30,13 @@ class TicTacToe {
 
   drawTurn(x, y, uid) {
     if (this.uid === uid) {
-      this.player1Moves.push(`${x},${y}`);
+      // this.player1Moves.push(`${x},${y}`);
       this.drawXorO(x, y, this.playerIsX);
     } else if (this.opponentUid === uid) {
-      this.player2Moves.push(`${x},${y}`);
+      // this.player2Moves.push(`${x},${y}`);
       this.drawXorO(x, y, !this.playerIsX);
     } else {
-      console.log(uid, "made a move but who is that?");
+      console.error(uid, "made a move but who is that?");
     }
     this.checkWin();
   }
@@ -86,54 +84,34 @@ class TicTacToe {
   }
 
   checkWin() {
-    if (this.winCondition(this.player1Moves)) {
-      console.log("WIN");
+    if (!this.winner)
+      return;
+    if (this.winner === this.uid) {
       this.isYourTurn = false;
       this.displayWin();
-    } else if (this.winCondition(this.player2Moves)) {
+    } else if (this.winner === this.opponentUid) {
       this.isYourTurn = false;
-      console.log("LOSS");
       this.displayLoss();
     } else {
-      console.log("No winners yet!");
+      console.error("Someone not part of the game won?", this.winner);
     }
-  }
-
-  winCondition(list) {
-    if (list.includes('0,0') && list.includes('1,1') && list.includes('2,2')) {
-      this.winningLine = [[0,0],[1,1], [2,2]];
-      return true;
-    } else if (list.includes('0,2') && list.includes('1,1') && list.includes('2,0')) {
-      this.winningLine = [[0,2], [1,1], [2,0]];
-      return true;
-    }
-    for (let i = 0; i < 3; i++) {
-      if (list.includes(`0,${i}`) && list.includes(`1,${i}`) && list.includes(`2,${i}`)) {
-        this.winningLine = [[0,i], [1,i],[2,i]];
-        return true;
-      } else if (list.includes(`${i},0`) && list.includes(`${i},1`) && list.includes(`${i},2`)) {
-        this.winningLine = [[i,0], [i,1], [i,2]];
-        return true;
-      }
-    }
-    return false;
   }
 
   displayWin() {
     this.ctx.strokeStyle = 'green';
     this.drawWinningLine(this.ctx);
-    console.log("You won!");
+    if (this.serverObserver)
+      this.serverObserver();
   }
 
   displayLoss() {
-    console.log("Drawing loss");
     this.ctx.strokeStyle = 'red';
     this.drawWinningLine(this.ctx);
-    console.log("You lost...");
+    if (this.serverObserver)
+      this.serverObserver();
   }
 
   drawWinningLine(ctx) {
-    console.log("Drawing");
     ctx.lineWidth = this.lineWidth;
     ctx.beginPath();
     ctx.moveTo(this.width/3 * (this.winningLine[0][0] + 0.5),
@@ -144,16 +122,14 @@ class TicTacToe {
   }
 
   clickTurn(canvas, e) {
-    console.log("Clicked", this);
     let canvasPos = canvas.getBoundingClientRect();
     let xMousePos = e.clientX - canvasPos.left;
     let yMousePos = e.clientY - canvasPos.top; 
     if (this.isYourTurn) {
       let x = Math.floor(xMousePos / (this.width / 3));
       let y = Math.floor(yMousePos / (this.height / 3));
-      console.log("Clicked:", x, y);
-      if (this.player1Moves.includes(`${x},${y}`) || this.player2Moves.includes(`${x},${y}`)) {
-        console.log("Already played here!");
+      if (this.docData && (this.docData.history[this.uid].includes(`${x},${y}`) ||
+          this.docData.history[this.opponentUid].includes(`${x},${y}`))) {
         return;
       }
       this.makeMoveServer(x, y);
@@ -161,7 +137,6 @@ class TicTacToe {
   }
 
   async makeMoveServer(x, y) {
-    console.log("Trying to go:", x, y);
     let data = {
       uid: this.uid,
       lobbyId: this.lobbyId,
@@ -178,6 +153,9 @@ class TicTacToe {
       if (result.status === 200) {
         this.drawTurn(x, y, this.uid);
         this.isYourTurn = false;
+        if (result.winner) {
+          this.winningLine = result.path;
+        }
       } else {
         alert('Invalid move');
         console.log(result);
@@ -190,12 +168,11 @@ class TicTacToe {
 
 
   async setupServer() {
-    console.log("Setting up server");
     await this.drawCurrentGame();
     this.setupServerUpdates();
   }
+
   async drawCurrentGame() {
-    console.log("Drawing current game");
     const doc = await this.db.collection('lobbies').doc(this.lobbyId).get();
     const data = doc.data();
     this.opponentUid = data.users[0] === this.uid ? data.users[1] : data.users[0];
@@ -203,7 +180,10 @@ class TicTacToe {
       this.isYourTurn = true;
       return;
     }
-    console.log(this.uid, this.opponentUid);
+    if (!data.gameOn) {
+      this.winningLine = JSON.parse(data.history.lastWinner.path);
+      this.winner = data.history.lastWinner.uid;
+    }
     data.history[this.uid].forEach(e => this.drawTurnFromString(this.uid, e));
     data.history[this.opponentUid].forEach(e => this.drawTurnFromString(this.opponentUid, e));
     if (!data.history.lastMove.uid) {
@@ -215,34 +195,35 @@ class TicTacToe {
 
   drawTurnFromString(uid, coordinates) {
     let coords = coordinates.split(',');
-    console.log("Point from string:", coords);
     this.drawTurn(coords[0], coords[1], uid);
   }
 
   setupServerUpdates() {
-    console.log("Setting up server updates");
-    console.log(this.lobbyId);
     this.serverObserver = this.db.collection('lobbies')
                                   .doc(this.lobbyId)
                                   .onSnapshot({
                                     includeMetadataChanges: true
-                                  }, doc => {
-                                    if (!doc.exists)
-                                      return;
-                                    console.log("Snapshot ran on ", this.lobbyId);
-                                    const data = doc.data();
-                                    if (this.opponentUid === undefined && data.users[1]) {
-                                      this.opponentUid = data.users[1];
-                                    }
-                                    if (data.history.lastMove.uid === this.opponentUid) {
-                                      console.log("Opponent moved");
-                                      this.isYourTurn = true;
-                                      this.drawTurn(data.history.lastMove.x,
-                                                    data.history.lastMove.y,
-                                                    data.history.lastMove.uid);
-                                    }
-                                    this.docData = doc;
-                                  });
+                                  }, doc => TicTacToe.onServerUpdate(this, doc));
+  }
+
+  static onServerUpdate(game, doc) {
+    if (!doc.exists)
+      return;
+    const data = doc.data();
+    if (game.opponentUid === undefined && data.users[1]) {
+      game.opponentUid = data.users[1];
+    }
+    if (data.history.lastMove.uid === game.opponentUid) {
+      game.isYourTurn = true;
+      game.drawTurn(data.history.lastMove.x,
+                    data.history.lastMove.y,
+                    data.history.lastMove.uid);
+    }
+    if (!data.gameOn) {
+      game.winningLine = JSON.parse(data.history.lastWinner.path);
+      game.winner = data.history.lastWinner.uid;
+    }
+    game.docData = data;
   }
 
   drawGameBoardLines() {
