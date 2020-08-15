@@ -20,7 +20,7 @@
       signInAnonymously();
       game = null;
     });
-    document.getElementById("enter-lobby").addEventListener("submit", enterLobby);
+    document.getElementById("submit-lobby").addEventListener("click", enterLobby);
   }
 
   function setupGame(uid, lobbyId) {
@@ -35,14 +35,26 @@
     main.appendChild(gameBoard);
   }
 
-  async function enterLobby(e) {
-      e.preventDefault();
-      let data = new FormData(document.getElementById("enter-lobby"));
+  async function enterLobby() {
+      let lobbyId = document.getElementById("lobby-id").value;
       let uid = firebase.auth().currentUser.uid;
-      data.append("uid", uid);
+      // TODO: display message here
+      if (!lobbyId || !uid) return;
+      let data = {
+        lobbyId: lobbyId,
+        uid: uid
+      }
       let res;
       try {
-        res = await fetch("/enterLobby", {method: "POST", body: data})
+        res = await fetch("/enterLobby", 
+                          {
+                            method: "POST",
+                            mode:"cors",
+                            headers: {
+                              "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify(data)
+                          });
         checkStatus(res);
         res = await res.json();
       } catch (error) {

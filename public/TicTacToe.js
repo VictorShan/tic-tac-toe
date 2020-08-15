@@ -131,8 +131,9 @@ class TicTacToe {
     if (this.isYourTurn) {
       let x = Math.floor(xMousePos / (this.width / 3));
       let y = Math.floor(yMousePos / (this.height / 3));
-      if (this.docData && (this.docData.history[this.uid].includes(`${x},${y}`) ||
-          this.docData.history[this.opponentUid].includes(`${x},${y}`))) {
+      if (this.docData &&
+            (this.docData.history[this.uid].includes(`${x},${y}`) ||
+            this.docData.history[this.opponentUid].includes(`${x},${y}`))) {
         return;
       }
       this.makeMoveServer(x, y);
@@ -177,7 +178,7 @@ class TicTacToe {
 
   async drawCurrentGame() {
     const doc = await this.db.collection('lobbies').doc(this.lobbyId).get();
-    const data = doc.data();
+    const data = doc.data(); 
     this.opponentUid = data.users[0] === this.uid ? data.users[1] : data.users[0];
     if (this.opponentUid === undefined) {
       this.isYourTurn = true;

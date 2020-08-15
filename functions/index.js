@@ -12,15 +12,22 @@ const express = require('express');
 const app = express();
 const multer = require('multer');
 
+const cors = require('cors');
+
 const firebase = require('firebase');
 const Firestore = require('firebase/firestore');
 const admin = require('firebase-admin');
 const serviceAccount = require("./serviceAccountKey.json");
-const { restart } = require('nodemon');
-admin.initializeApp(functions.config().firebase);
+//const { restart } = require('nodemon');
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://tic-tac-toe-82af8.firebaseio.com"
+});
 
 const db = admin.firestore();
 
+// Cross origin requests
+app.use(cors({ origin: true }));
 // for application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true })); // built-in middleware
 // for application/json
@@ -29,6 +36,10 @@ app.use(express.json()); // built-in middleware
 app.use(multer().none()); // requires the "multer" module
 
 app.post('/enterLobby', async (req, res) => {
+  if (!req.body || req.body.uid === undefined || req.body.lobbyId === undefined) {
+    res.status(400).send("Invalid Request")
+  }
+  console.log("Request:", req.body); 
   const doc = await db.collection('lobbies').doc(req.body.lobbyId).get();
   let result;
   if (!doc.exists) {
@@ -40,8 +51,12 @@ app.post('/enterLobby', async (req, res) => {
   res.status(result.status).json(result);
 });
 
-app.post('/clearBoard', () => {
-  res.send("will be implemented")
+app.post('/clearBoard', (req, res) => {
+  console.log("Clear Board");
+  res.json({
+    message: "Will be implemented",
+    req: req.body
+  })
 });
 
 app.post('/makeMove', async (req, res) => {
@@ -57,10 +72,7 @@ app.post('/makeMove', async (req, res) => {
   }
 })
 
-exports.serverFunction = functions.https.onRequest(app);
-// app.use(express.static('public'));
-// const PORT = process.env.port || 8080;
-// app.listen(PORT);
+exports.app = functions.https.onRequest(app);
 
 
 // Helper functions

@@ -1,14 +1,14 @@
-"use strict"
-
 const express = require('express');
 const app = express();
 const multer = require('multer');
+
+const cors = require('cors');
 
 const firebase = require('firebase');
 const Firestore = require('firebase/firestore');
 const admin = require('firebase-admin');
 const serviceAccount = require("./serviceAccountKey.json");
-const { restart } = require('nodemon');
+//const { restart } = require('nodemon');
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: "https://tic-tac-toe-82af8.firebaseio.com"
@@ -16,7 +16,7 @@ admin.initializeApp({
 
 const db = admin.firestore();
 
-const cors = require('cors');
+// Cross origin requests
 app.use(cors({ origin: true }));
 // for application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true })); // built-in middleware
@@ -26,7 +26,10 @@ app.use(express.json()); // built-in middleware
 app.use(multer().none()); // requires the "multer" module
 
 app.post('/enterLobby', async (req, res) => {
-  console.log(req.body);
+  if (!req.body || req.body.uid === undefined || req.body.lobbyId === undefined) {
+    res.status(400).send("Invalid Request")
+  }
+  console.log("Request:", req.body); 
   const doc = await db.collection('lobbies').doc(req.body.lobbyId).get();
   let result;
   if (!doc.exists) {
@@ -55,14 +58,11 @@ app.post('/makeMove', async (req, res) => {
     res.status(result.status).send(result.message);
   } catch (error) {
     console.error(error);
-    return res.status(500).send("Server error");
+    res.status(500).send("Server error");
   }
 })
 
-
-app.use(express.static('public'));
-const PORT = process.env.port || 8080;
-app.listen(PORT);
+exports.app = functions.https.onRequest(app);
 
 
 // Helper functions
@@ -153,6 +153,7 @@ async function newMove(reqBody, data) {
   }
 
   if (winner === null) {
+    // Do nothing
   } else if (winner === false) {
     updateData.gameOn = false;
   } else if (winner === data.users[0]) {
@@ -169,8 +170,10 @@ async function newMove(reqBody, data) {
 function determineWinner(docData) {
   // path is getting assigned in the if statement and then its value is tested
   let path;
+  // eslint-disable-next-line no-cond-assign
   if (path = winCondition(docData.history[docData.users[0]])) {
     return [docData.users[0], path];
+  // eslint-disable-next-line no-cond-assign
   } else if (path = winCondition(docData.history[docData.users[1]])) {
     return [docData.users[1], path];
   } else if (docData.history[docData.users[0]].length + docData.history[docData.users[1]].length === 9) {
@@ -207,3 +210,4 @@ function newWinner(docData, updateData, uid, path) {
     uid: uid
   }
 }
+
