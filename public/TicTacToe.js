@@ -84,13 +84,13 @@ class TicTacToe {
   }
 
   checkWin() {
-    console.log("Checking win");
-    console.log(this.winner);
-    if (!this.winner)
+    if (!this.winner) {
       return;
+    }
     if (this.winner === this.uid) {
       this.isYourTurn = false;
       this.displayWin();
+
     } else if (this.winner === this.opponentUid) {
       this.isYourTurn = false;
       this.displayLoss();
@@ -104,7 +104,7 @@ class TicTacToe {
     this.drawWinningLine(this.ctx);
     if (this.serverObserver)
       this.serverObserver();
-  }
+  } 
 
   displayLoss() {
     this.ctx.strokeStyle = 'red';
@@ -124,7 +124,6 @@ class TicTacToe {
   }
 
   clickTurn(canvas, e) {
-    console.log("Click", this);
     let canvasPos = canvas.getBoundingClientRect();
     let xMousePos = e.clientX - canvasPos.left;
     let yMousePos = e.clientY - canvasPos.top; 
@@ -155,11 +154,12 @@ class TicTacToe {
         },
         body: JSON.stringify(data)});
       if (result.status === 200) {
-        this.drawTurn(x, y, this.uid);
-        this.isYourTurn = false;
         if (result.winner) {
           this.winningLine = result.path;
+          this.winner = result.winner;
         }
+        this.drawTurn(x, y, this.uid);
+        this.isYourTurn = false;
       } else {
         alert('Invalid move');
         console.log(result);

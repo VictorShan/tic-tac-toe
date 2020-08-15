@@ -163,7 +163,7 @@ async function newMove(reqBody, data) {
     throw Error("Invalid state");
   }
   await db.collection('lobbies').doc(reqBody.lobbyId).update(updateData);
-  return { status: 200 }  
+  return { status: 200, message: { winner: winner ? winner : null, path: winner ? path : null} }  
 }
 
 function determineWinner(docData) {

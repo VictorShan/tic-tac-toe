@@ -36,10 +36,7 @@ app.use(express.json()); // built-in middleware
 app.use(multer().none()); // requires the "multer" module
 
 app.post('/enterLobby', async (req, res) => {
-  if (!req.body || req.body.uid === undefined || req.body.lobbyId === undefined) {
-    res.status(400).send("Invalid Request")
-  }
-  console.log("Request:", req.body); 
+  console.log(req.body);
   const doc = await db.collection('lobbies').doc(req.body.lobbyId).get();
   let result;
   if (!doc.exists) {
@@ -68,11 +65,14 @@ app.post('/makeMove', async (req, res) => {
     res.status(result.status).send(result.message);
   } catch (error) {
     console.error(error);
-    res.status(500).send("Server error");
+    return res.status(500).send("Server error");
   }
 })
 
-exports.app = functions.https.onRequest(app);
+
+app.use(express.static('public'));
+const PORT = process.env.port || 8080;
+app.listen(PORT);
 
 
 // Helper functions
@@ -165,6 +165,7 @@ async function newMove(reqBody, data) {
   if (winner === null) {
     // Do nothing
   } else if (winner === false) {
+    // Tie situation
     updateData.gameOn = false;
   } else if (winner === data.users[0]) {
     newWinner(data, updateData, data.users[0], path);
@@ -174,16 +175,14 @@ async function newMove(reqBody, data) {
     throw Error("Invalid state");
   }
   await db.collection('lobbies').doc(reqBody.lobbyId).update(updateData);
-  return { status: 200 }  
+  return { status: 200, message: { winner: winner ? winner : null, path: winner ? path : null} }  
 }
 
 function determineWinner(docData) {
   // path is getting assigned in the if statement and then its value is tested
   let path;
-  // eslint-disable-next-line no-cond-assign
   if (path = winCondition(docData.history[docData.users[0]])) {
     return [docData.users[0], path];
-  // eslint-disable-next-line no-cond-assign
   } else if (path = winCondition(docData.history[docData.users[1]])) {
     return [docData.users[1], path];
   } else if (docData.history[docData.users[0]].length + docData.history[docData.users[1]].length === 9) {

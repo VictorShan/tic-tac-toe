@@ -36,31 +36,26 @@
   }
 
   async function enterLobby() {
-      let lobbyId = document.getElementById("lobby-id").value;
-      let uid = firebase.auth().currentUser.uid;
-      // TODO: display message here
-      if (!lobbyId || !uid) return;
-      let data = {
-        lobbyId: lobbyId,
-        uid: uid
-      }
-      let res;
-      try {
-        res = await fetch("/enterLobby", 
-                          {
-                            method: "POST",
-                            mode:"cors",
-                            headers: {
-                              "Content-Type": "application/json"
-                            },
-                            body: JSON.stringify(data)
-                          });
-        checkStatus(res);
-        res = await res.json();
-      } catch (error) {
-        console.error(error);
-      }
+    let lobbyId = document.getElementById("lobby-id").value;
+    let uid = firebase.auth().currentUser.uid;
+    // TODO: display message here
+    if (!lobbyId || !uid) return;
+    let data = {
+      lobbyId: lobbyId,
+      uid: uid
+    }
+    let res;
+    try {
+      res = await fetch("/enterLobby", { method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data) });
+      checkStatus(res);
+      res = await res.json();
+      console.log(res);
       setupGame(uid, res.lobbyId);
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   function checkStatus(res) {
