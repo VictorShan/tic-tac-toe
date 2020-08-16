@@ -238,6 +238,9 @@ class TicTacToe {
   }
 
 
+  /**
+   * Setup the server connection for the game
+   */
   async setupServer() {
     await this.drawCurrentGame();
     this.setupServerUpdates();
@@ -249,7 +252,6 @@ class TicTacToe {
   async drawCurrentGame() {
     const doc = await this.dbRef.get();
     const data = doc.data();
-    console.log(data);
     if (data.users.length < 2) {
       this.isYourTurn = false;
       return;

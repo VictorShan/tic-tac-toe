@@ -1,3 +1,13 @@
+const functions = require('firebase-functions');
+
+// // Create and Deploy Your First Cloud Functions
+// // https://firebase.google.com/docs/functions/write-firebase-functions
+//
+// exports.helloWorld = functions.https.onRequest((request, response) => {
+//   functions.logger.info("Hello logs!", {structuredData: true});
+//   response.send("Hello from Firebase!");
+// });
+
 const express = require('express');
 const app = express();
 const multer = require('multer');
@@ -8,10 +18,7 @@ const firebase = require('firebase');
 const Firestore = require('firebase/firestore');
 const admin = require('firebase-admin');
 const serviceAccount = require("./serviceAccountKey.json");
-
-// Hours of inactivity until lobby is recycled
-const LOBBY_RECYCLE_HRS = 3;
-
+//const { restart } = require('nodemon');
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: "https://tic-tac-toe-82af8.firebaseio.com"
@@ -66,14 +73,11 @@ app.post('/makeMove', async (req, res) => {
   }
 })
 
+exports.app = functions.https.onRequest(app);
+
+
 // Helper functions
 
-/**
- * Create a new lobby that has never been used before. Fills out
- * the basic template and adds the user that created it to the game
- * @param {string} lobbyId New lobby name
- * @param {string} uid User id
- */
 async function createLobby(lobbyId, uid) {
   const data = {
     gameOn: true,
@@ -104,17 +108,10 @@ async function createLobby(lobbyId, uid) {
   }
 }
 
-/**
- * Enters a lobby by updating user information in the database.
- * Removes previous user if inactive for more than LOBBY_RECYCLE_HRS hours
- * @param {object} data The json data from the firebase document with game data
- * @param {string} lobbyId The lobby id
- * @param {string} uid The user id
- */
 async function enterLobby(data, lobbyId, uid) {
   try {
     if (admin.firestore.Timestamp.now().seconds -
-        data.history.lastMove.time.seconds > LOBBY_RECYCLE_HRS*60*60) {
+        data.history.lastMove.time.seconds > 1*60*60) { // Last move was more than 3hrs ago
       createLobby(lobbyId, uid);
     } else if (!data.users.includes(uid)) {
       if (data.users.length < 2) {
@@ -148,12 +145,6 @@ async function enterLobby(data, lobbyId, uid) {
   }
 }
 
-/**
- * Make a new move
- * @param {object} reqBody The request body
- * @param {object} data The last turn's game data
- * @returns {object} An object with status and message attributes
- */
 async function newMove(reqBody, data) {
   if (!data.users.includes(reqBody.uid) || data.history.lastMove.uid === reqBody.uid)
     return { status: 406, message: "Not your turn"};
@@ -172,32 +163,22 @@ async function newMove(reqBody, data) {
     }
   }
 
-  let message = { status: 200 };
   if (winner === null) {
     // Do nothing, no winners
   } else if (winner === false) {
     // Tie situation
     updateData.gameOn = false;
-    message.path = [];
   } else if (winner === data.users[0]) {
     newWinner(data, updateData, data.users[0], path);
-    message.winner = winner;
-    message.path = path;
   } else if (winner === data.users[1]) {
     newWinner(data, updateData, data.users[1], path);
-    message.winner = winner;
-    message.path = path;
   } else {
     throw Error("Invalid state");
   }
   await db.collection('lobbies').doc(reqBody.lobbyId).update(updateData);
-  return { status: 200, message: message };  
+  return { status: 200, message: { winner: winner ? winner : null, path: winner ? path : null} }  
 }
 
-/**
- * Check whether or not someone has won
- * @param {object} docData The game data
- */
 function determineWinner(docData) {
   // path is the winning path for that user if it exists, otherwise false
   let path0 = winCondition(docData.history[docData.users[0]]);
@@ -214,10 +195,6 @@ function determineWinner(docData) {
   return [null, null];
 }
 
-/**
- * Checks a list of string coordinates for possible wins
- * @param {string[]} list List of string coordinates in the form "x,y"
- */
 function winCondition(list) {
   if (list.includes('0,0') && list.includes('1,1') && list.includes('2,2')) {
     return [[0,0],[1,1],[2,2]];
@@ -234,13 +211,6 @@ function winCondition(list) {
   return false;
 }
 
-/**
- * Formats the new update query for a new winner
- * @param {object} docData Previous game data updated to last move
- * @param {object} updateData Data that will be updated
- * @param {string} uid The uid of the winner
- * @param {number[][]} path A list of coordinates that describe the winning line
- */
 function newWinner(docData, updateData, uid, path) {
   updateData[`score.${uid}`] = docData.score[uid] + 1;
   updateData.gameOn = false;
@@ -249,5 +219,3 @@ function newWinner(docData, updateData, uid, path) {
     uid: uid
   }
 }
-
-module.exports = app;

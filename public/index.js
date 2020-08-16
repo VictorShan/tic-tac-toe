@@ -47,9 +47,13 @@
     }
     let res;
     try {
-      res = await fetch("/enterLobby", { method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data) });
+      res = await fetch("/enterLobby",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        }
+      );
       checkStatus(res);
       res = await res.json();
       setupGame(uid, res.lobbyId);
