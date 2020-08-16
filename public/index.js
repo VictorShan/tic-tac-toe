@@ -12,6 +12,7 @@
 
   function init() {
     addEventListeners();
+    displayInstructions();
   }
 
   function addEventListeners() {
@@ -20,11 +21,11 @@
       signInAnonymously();
       game = null;
     });
-    document.getElementById("enter-lobby").addEventListener("submit", enterLobby);
+    document.getElementById("submit-lobby").addEventListener("click", enterLobby);
   }
 
   function setupGame(uid, lobbyId) {
-    game = new TicTacToe(db, 500, 500, uid, lobbyId);    
+    game = new TicTacToe(db.collection('lobbies').doc(lobbyId), 500, 500, uid, lobbyId);    
     let main = document.querySelector("main");
     let oldBoard = document.getElementById("game-board");
     if (oldBoard) {
@@ -35,20 +36,30 @@
     main.appendChild(gameBoard);
   }
 
-  async function enterLobby(e) {
-      e.preventDefault();
-      let data = new FormData(document.getElementById("enter-lobby"));
-      let uid = firebase.auth().currentUser.uid;
-      data.append("uid", uid);
-      let res;
-      try {
-        res = await fetch("/enterLobby", {method: "POST", body: data})
-        checkStatus(res);
-        res = await res.json();
-      } catch (error) {
-        console.error(error);
-      }
+  async function enterLobby() {
+    let lobbyId = document.getElementById("lobby-id").value;
+    let uid = firebase.auth().currentUser.uid;
+    // TODO: display message here
+    if (!lobbyId || !uid) return;
+    let data = {
+      lobbyId: lobbyId,
+      uid: uid
+    }
+    let res;
+    try {
+      res = await fetch("/enterLobby",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        }
+      );
+      checkStatus(res);
+      res = await res.json();
       setupGame(uid, res.lobbyId);
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   function checkStatus(res) {
@@ -84,5 +95,18 @@
       let errorMessage = error.message;
       console.error(errorCode, errorMessage);
     })
+  }
+
+  /**
+   * Displays the instructions from firebase /public/instructions
+   */
+  async function displayInstructions() {
+    let doc = await db.collection('public').doc('instructions').get();
+    if (doc.exists) {
+      let instructions = doc.data();
+      document.getElementById('instructions-text').textContent = instructions["instructions-text"];
+    } else {
+      document.getElementById('instructions-text').textContent = "No instructions found. Do your best!";
+    }
   }
 })();
