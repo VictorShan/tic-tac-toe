@@ -1,9 +1,9 @@
 class TicTacToe {
-  constructor(db, height, width, uid, lobbyId) {
+  constructor(dbRef, height, width, uid, lobbyId) {
     this.height = height;
     this.width = width;
     this.playerIsX = true;
-    this.db = db;
+    this.dbRef = dbRef;
     this.dbDoc = {};
     this.lineWidth = 10;
     this.uid = uid;
@@ -19,6 +19,19 @@ class TicTacToe {
     return this.canvas;
   }
 
+  get info() {
+    return this.dbDoc;
+  }
+
+  /**
+   * Creates canvas element, draws board lines and adds click listener
+   * Game coordinates (0-indexed): 
+   *    ------->x
+   *    |
+   *    |
+   *    V
+   *    Y
+   */
   createGameBoard() {
     this.canvas = document.createElement("canvas");
     this.canvas.height = this.height;
@@ -28,12 +41,16 @@ class TicTacToe {
     this.drawGameBoardLines();
   }
 
+  /**
+   * Draws a turn. Symbol depends on uid and location on x and y.
+   * @param {number} x 0 The game's horizontal, integer coordinate (0 <= x <= 2)
+   * @param {number} y 0 The game's vertical, integer coordinate (0 <= y <= 2)
+   * @param {string} uid The player's uid that made the move
+   */
   drawTurn(x, y, uid) {
     if (this.uid === uid) {
-      // this.player1Moves.push(`${x},${y}`);
       this.drawXorO(x, y, this.playerIsX);
     } else if (this.opponentUid === uid) {
-      // this.player2Moves.push(`${x},${y}`);
       this.drawXorO(x, y, !this.playerIsX);
     } else {
       console.error(uid, "made a move but who is that?");
@@ -41,6 +58,12 @@ class TicTacToe {
     this.checkWin();
   }
 
+  /**
+   * Draws a 'X' or 'O' at x,y
+   * @param {number} x The game's horizontal, integer coordinate (0 <= x <= 2)
+   * @param {number} y The game's vertical, integer coordinate (0 <= y <= 2)
+   * @param {boolean} drawX Whether to draw an 'X' or an 'O'
+   */
   drawXorO(x, y, drawX) {
     if (drawX) {
       this.drawX(x, y);
@@ -49,6 +72,14 @@ class TicTacToe {
     }
   }
 
+  /**
+   * Translates x and y coordinates of the game into x, y coordinates of
+   * the canvas.
+   * @param {number} x The game's horizontal, integer coordinate (0 <= x <= 2)
+   * @param {number} y The game's vertical, integer coordinate (0 <= y <= 2)
+   * @returns {[number, number, number number]} Returns the upper left corner's x,y
+   * and the width of the width and height of the symbol.
+   */
   calculateCoordinates(x, y) {
     x = x * this.width / 3 + this.lineWidth;
     y = y * this.height / 3 + this.lineWidth;
@@ -57,6 +88,11 @@ class TicTacToe {
     return [x, y, width, height]
   }
 
+  /**
+   * Draws an X at game coordinate (x,y)
+   * @param {number} x The game's horizontal, integer coordinate (0 <= x <= 2)
+   * @param {number} y The game's vertical, integer coordinate (0 <= y <= 2)
+   */
   drawX(x, y) {
     let width, height;
     [x, y, width, height] = this.calculateCoordinates(x, y);
@@ -74,8 +110,14 @@ class TicTacToe {
     this.ctx.stroke();
   }
 
-  drawO(x1, y1) {
-    let [x, y, width, height] = this.calculateCoordinates(x1, y1);
+  /**
+   * Draws an O at game coordinate (x,y)
+   * @param {number} x The game horizontal, integer coordinate (0 <= x <= 2)
+   * @param {number} y The game vertical, integer coordinate (0 <= y <= 2)
+   */
+  drawO(x, y) {
+    let width, height;
+    [x, y, width, height] = this.calculateCoordinates(x, y);
     this.ctx.strokeStyle = "black";
     this.ctx.lineWidth = this.lineWidth / 2;
     this.ctx.beginPath();
@@ -83,6 +125,9 @@ class TicTacToe {
     this.ctx.stroke();
   }
 
+  /**
+   * Check if there is a winner and draw the winning line if there is.
+   */
   checkWin() {
     if (!this.winner) {
       return;
@@ -99,6 +144,9 @@ class TicTacToe {
     }
   }
 
+  /**
+   * Draw the winning line in green because player won.
+   */
   displayWin() {
     this.ctx.strokeStyle = 'green';
     this.drawWinningLine(this.ctx);
@@ -106,6 +154,9 @@ class TicTacToe {
       this.serverObserver();
   } 
 
+  /**
+   * Draw the winning line in red because player lost.
+   */
   displayLoss() {
     this.ctx.strokeStyle = 'red';
     this.drawWinningLine(this.ctx);
@@ -113,6 +164,10 @@ class TicTacToe {
       this.serverObserver();
   }
 
+  /**
+   * Draws the winning line
+   * @param {CanvasRenderingContext2D} ctx The canvas/game board pen
+   */
   drawWinningLine(ctx) {
     ctx.lineWidth = this.lineWidth;
     ctx.beginPath();
@@ -123,6 +178,12 @@ class TicTacToe {
     ctx.stroke();
   }
 
+  /**
+   * Handles clicks on the canvas by interpreting it as a player turn
+   * or ignoring it.
+   * @param {canvas} canvas The game board element
+   * @param {event} e The event of clicking on the canvas
+   */
   clickTurn(canvas, e) {
     let canvasPos = canvas.getBoundingClientRect();
     let xMousePos = e.clientX - canvasPos.left;
@@ -139,6 +200,11 @@ class TicTacToe {
     }
   }
 
+  /**
+   * Player wants to make a next move at (x,y). If server approves, it is drawn.
+   * @param {number} x The x coordinate of the next move the player wants to make (0 <= x <= 2)
+   * @param {number} y The y coordinate of the next move the player wants to make (0 <= y <= 2)
+   */
   async makeMoveServer(x, y) {
     let data = {
       uid: this.uid,
@@ -153,6 +219,7 @@ class TicTacToe {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(data)});
+      // TODO: Clean up this code later
       if (result.status === 200) {
         if (result.winner) {
           this.winningLine = result.path;
@@ -176,14 +243,18 @@ class TicTacToe {
     this.setupServerUpdates();
   }
 
+  /**
+   * Draws the current game using database
+   */
   async drawCurrentGame() {
-    const doc = await this.db.collection('lobbies').doc(this.lobbyId).get();
-    const data = doc.data(); 
-    this.opponentUid = data.users[0] === this.uid ? data.users[1] : data.users[0];
-    if (this.opponentUid === undefined) {
-      this.isYourTurn = true;
+    const doc = await this.dbRef.get();
+    const data = doc.data();
+    console.log(data);
+    if (data.users.length < 2) {
+      this.isYourTurn = false;
       return;
     }
+    this.opponentUid = data.users[0] === this.uid ? data.users[1] : data.users[0];
     if (!data.gameOn) {
       this.winningLine = JSON.parse(data.history.lastWinner.path);
       this.winner = data.history.lastWinner.uid;
@@ -197,40 +268,57 @@ class TicTacToe {
     }
   }
 
+  /**
+   * Draws a turn from string coordinates and player uid
+   * @param {string} uid The uid of the move's player
+   * @param {string} coordinates Coordinates in string form "x,y"
+   */
   drawTurnFromString(uid, coordinates) {
     let coords = coordinates.split(',');
     this.drawTurn(coords[0], coords[1], uid);
   }
 
+  /**
+   * Subscribe to firestore for updates
+   */
   setupServerUpdates() {
-    this.serverObserver = this.db.collection('lobbies')
-                                  .doc(this.lobbyId)
-                                  .onSnapshot({
+    this.serverObserver = this.dbRef.onSnapshot({
                                     includeMetadataChanges: true
                                   }, doc => TicTacToe.onServerUpdate(this, doc));
   }
 
+  /**
+   * When the lobby's entry is updated in the database, draw the result
+   * @param {TicTacToe} game The current game
+   * @param {DocumentSnapshot} doc A snapshot of the database document
+   */
   static onServerUpdate(game, doc) {
     if (!doc.exists)
       return;
     const data = doc.data();
-    if (game.opponentUid === undefined && data.users[1]) {
-      game.opponentUid = data.users[1];
+    if (!game.opponentUid) {
+      if (data.users[1]) {
+        game.opponentUid = data.users[1];
+        game.isYourTurn = true;
+      }
+    } else {
+      if (!data.gameOn) {
+        game.winningLine = JSON.parse(data.history.lastWinner.path);
+        game.winner = data.history.lastWinner.uid;
+      }
+      if (data.history.lastMove.uid === game.opponentUid) {
+        game.isYourTurn = true;
+        game.drawTurn(data.history.lastMove.x,
+                      data.history.lastMove.y,
+                      data.history.lastMove.uid);
+      }
     }
-    if (!data.gameOn) {
-      game.winningLine = JSON.parse(data.history.lastWinner.path);
-      game.winner = data.history.lastWinner.uid;
-    }
-    if (data.history.lastMove.uid === game.opponentUid) {
-      game.isYourTurn = true;
-      game.drawTurn(data.history.lastMove.x,
-                    data.history.lastMove.y,
-                    data.history.lastMove.uid);
-    }
-    console.log(data);
     game.docData = data;
   }
 
+  /**
+   * Draws the lines on the tic tac toe board
+   */
   drawGameBoardLines() {
     this.ctx.fillStyle = 'black';
 
@@ -255,6 +343,9 @@ class TicTacToe {
     this.ctx.fillRect(0, this.height * 2/3 - this.lineWidth/2, this.width, this.lineWidth);
   }
 
+  /**
+   * Delete game by unsubscribing to the database
+   */
   deleteGame() {
     this.serverObserver();
   }

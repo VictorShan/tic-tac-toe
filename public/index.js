@@ -12,6 +12,7 @@
 
   function init() {
     addEventListeners();
+    displayInstructions();
   }
 
   function addEventListeners() {
@@ -24,7 +25,7 @@
   }
 
   function setupGame(uid, lobbyId) {
-    game = new TicTacToe(db, 500, 500, uid, lobbyId);    
+    game = new TicTacToe(db.collection('lobbies').doc(lobbyId), 500, 500, uid, lobbyId);    
     let main = document.querySelector("main");
     let oldBoard = document.getElementById("game-board");
     if (oldBoard) {
@@ -51,7 +52,6 @@
         body: JSON.stringify(data) });
       checkStatus(res);
       res = await res.json();
-      console.log(res);
       setupGame(uid, res.lobbyId);
     } catch (error) {
       console.error(error);
@@ -91,5 +91,18 @@
       let errorMessage = error.message;
       console.error(errorCode, errorMessage);
     })
+  }
+
+  /**
+   * Displays the instructions from firebase /public/instructions
+   */
+  async function displayInstructions() {
+    let doc = await db.collection('public').doc('instructions').get();
+    if (doc.exists) {
+      let instructions = doc.data();
+      document.getElementById('instructions-text').textContent = instructions["instructions-text"];
+    } else {
+      document.getElementById('instructions-text').textContent = "No instructions found. Do your best!";
+    }
   }
 })();

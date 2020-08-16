@@ -36,7 +36,10 @@ app.use(express.json()); // built-in middleware
 app.use(multer().none()); // requires the "multer" module
 
 app.post('/enterLobby', async (req, res) => {
-  console.log(req.body);
+  if (!req.body || req.body.uid === undefined || req.body.lobbyId === undefined) {
+    res.status(400).send("Invalid Request")
+  }
+  console.log("Request:", req.body); 
   const doc = await db.collection('lobbies').doc(req.body.lobbyId).get();
   let result;
   if (!doc.exists) {
@@ -62,17 +65,15 @@ app.post('/makeMove', async (req, res) => {
     if (!doc.exists)
       res.status(404).send("Lobby not found")
     let result = await newMove(req.body, doc.data());
+    console.log("Move result:",);
     res.status(result.status).send(result.message);
   } catch (error) {
     console.error(error);
-    return res.status(500).send("Server error");
+    res.status(500).send("Server error");
   }
 })
 
-
-app.use(express.static('public'));
-const PORT = process.env.port || 8080;
-app.listen(PORT);
+exports.app = functions.https.onRequest(app);
 
 
 // Helper functions
@@ -163,7 +164,7 @@ async function newMove(reqBody, data) {
   }
 
   if (winner === null) {
-    // Do nothing
+    // Do nothing, no winners
   } else if (winner === false) {
     // Tie situation
     updateData.gameOn = false;
