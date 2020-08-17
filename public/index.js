@@ -30,7 +30,7 @@
    * @param {string} lobbyId Lobby ID
    */
   function setupGame(uid, lobbyId) {
-    game = new TicTacToe(db.collection('lobbies').doc(lobbyId), 500, 500, uid, lobbyId);   
+    game = new TicTacToe(db.collection('lobbies').doc(lobbyId), 400, 400, uid, lobbyId);   
     let gameContainer = document.getElementById("game");
     let gameInfo = document.getElementById("game-info");
     let oldBoard = document.getElementById("game-board");
