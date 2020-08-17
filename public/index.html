@@ -1,13 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <title>Tic-Tac-Toe</title>
     <link rel="stylesheet" href="index.css" />
-    <!-- The core Firebase JS SDK is always required and must be listed first -->
     <script src="https://www.gstatic.com/firebasejs/7.17.2/firebase-app.js"></script>
-    <!-- TODO: Add SDKs for Firebase products that you want to use
-        https://firebase.google.com/docs/web/setup#available-libraries -->
     <script src="https://www.gstatic.com/firebasejs/7.17.2/firebase-analytics.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.17.2/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.17.2/firebase-firestore.js"></script> 
@@ -18,19 +15,28 @@
   <body>
     <header>
       <h1>Tic-Tac-Toe!</h1>
-      <h4 id="uid"></h4>
-      <button id="reset-id">Reset ID</button>
+      <section id="uid-info">
+        <h4 id="uid"></h4>
+        <button id="reset-id">Reset ID</button>
+      </section>
     </header>
     <main>
-      <label>
-        Lobby ID:
-        <input id="lobby-id" required/>
-      </label>
-      <button id="submit-lobby">Enter Game!</button>
+      <form id="lobby-form">
+        <label>
+          Lobby ID:
+          <input name="lobby-id" id="lobby-id" required/>
+        </label>
+        <button type="submit" id="submit-lobby">Enter Game!</button>
+      </form>
+      <div id="game"></div>
     </main>
     <article id="instructions">
       <h3>Instructions</h3>
-      <p id="instructions-text"></p>
+      <p>
+        Enter a lobby id to create/join a game.
+        If that lobby is full, wait and try again or use a different lobby.
+        Lobbies will reset after 3 hours of inactivity.
+      </p>
     </article>
   </body>
 </html>
