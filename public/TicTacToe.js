@@ -200,6 +200,7 @@ class TicTacToe {
     let xMousePos = e.clientX - canvasPos.left;
     let yMousePos = e.clientY - canvasPos.top; 
     if (this.isYourTurn) {
+      this.isYourTurn = false;
       let x = Math.floor(xMousePos / (this.width / 3));
       let y = Math.floor(yMousePos / (this.height / 3));
       if (this.docData &&
@@ -207,7 +208,7 @@ class TicTacToe {
             this.docData.history[this.opponentUid].includes(`${x},${y}`))) {
         return;
       }
-      this.makeMoveServer(x, y);
+      this.isYourTurn = !this.makeMoveServer(x, y);
     }
   }
 
@@ -215,6 +216,7 @@ class TicTacToe {
    * Player wants to make a next move at (x,y). If server approves, it is drawn.
    * @param {number} x The x coordinate of the next move the player wants to make (0 <= x <= 2)
    * @param {number} y The y coordinate of the next move the player wants to make (0 <= y <= 2)
+   * @return {boolean} true if the move is successful
    */
   async makeMoveServer(x, y) {
     let data = {
@@ -240,15 +242,17 @@ class TicTacToe {
           this.winner = false;
         }
         this.drawTurn(x, y, this.uid);
-        this.isYourTurn = false;
         this.updateInfo(this.docData);
+        return true;
       } else {
         alert('Invalid move');
         console.log(result);
+        return false;
       }
     } catch (error) {
       console.log("Couldn't make move.")
       console.error(error);
+      return false;
     }
   }
 
