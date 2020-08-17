@@ -1,7 +1,12 @@
+main {
+  margin: 10px;
+}
+
 #lobby-form {
   display: flex;
   flex-direction: row;
   justify-content: center;
+  margin: 10px;
 }
 
 #uid-info {
@@ -30,4 +35,29 @@
 
 #instructions {
   margin: 0 20vw;
+}
+
+#notification {
+  padding: 0 20px;
+  margin-top: 5px;
+  margin-right: 10px;
+  margin-left: 10px;
+  margin-bottom: 15px;
+  transition: opacity 2s ease, background-color 1s ease, border-color 1s ease;
+  border-width: 5px;
+  border-style: solid;
+}
+
+.notification-bad {
+  background-color: #ff8787;
+  border-color: #ff4a4a;
+}
+
+.notification-good {
+  background-color: #abffba;
+  border-color: #4fff6e;
+}
+
+.invisible {
+  opacity: 0%;
 }

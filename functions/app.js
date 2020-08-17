@@ -32,7 +32,6 @@ app.post('/enterLobby', async (req, res) => {
   if (!req.body || req.body.uid === undefined || req.body.lobbyId === undefined) {
     res.status(400).send("Invalid Request")
   }
-  console.log("Request:", req.body); 
   const doc = await db.collection('lobbies').doc(req.body.lobbyId).get();
   let result;
   if (!doc.exists) {
@@ -58,7 +57,6 @@ app.post('/makeMove', async (req, res) => {
     if (!doc.exists)
       res.status(404).send("Lobby not found")
     let result = await newMove(req.body, doc.data());
-    console.log("Move result:", result);
     res.status(result.status).send(result.message);
   } catch (error) {
     console.error(error);
@@ -127,7 +125,7 @@ async function enterLobby(data, lobbyId, uid) {
         return {
           status: 423,
           message: "Two player are already in this lobby! " +
-                    "Lobby will open after 1hr of idle time."
+                    "Lobby will open after " + LOBBY_RECYCLE_HRS + "hrs of idle time."
         }
       }
     } else {

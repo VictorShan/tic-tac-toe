@@ -6,6 +6,7 @@
 
   let game;
   let db;
+  let notificationTimeout;
 
 
   initFirebase();
@@ -75,9 +76,11 @@
       );
       checkStatus(res);
       res = await res.json();
+      showTemporaryAlert(res.message, true)
       setupGame(uid, res.lobbyId);
     } catch (error) {
-      console.error(error);
+      res = await res.json()
+      showTemporaryAlert("Unable to join lobby: " + res.message, false);
     }
   }
 
@@ -126,7 +129,29 @@
     })
   }
 
-  function ticTacToeInfo(docData) {
-
+  /**
+   * Displays message in notification bar for 10 seconds. Stores timer in
+   * global variable notificationTimeout
+   * @param {string} message Message displayed in the text
+   * @param {boolean} isGood Whether it is a good or bad message
+   */
+  function showTemporaryAlert(message, isGood) {
+    document.getElementById("notification-text").textContent = message;
+    let notification = document.getElementById("notification");
+    if (isGood) {
+      notification.classList.remove("notification-bad");
+      notification.classList.add("notification-good");
+    } else {
+      notification.classList.add("notification-bad");
+      notification.classList.remove("notification-good");
+    }
+    notification.classList.remove("invisible");
+    
+    // Reset timeout
+    clearTimeout(notificationTimeout);
+    notificationTimeout = setTimeout(() => {
+      notification.classList.add("invisible");
+    }, 10000);
   }
+
 })();
