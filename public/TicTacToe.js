@@ -13,6 +13,20 @@ class TicTacToe {
     this.ctx;
     this.createGameBoard();
     this.setupServer();
+    // Runs every time game is updated
+    this.infoElement;
+  }
+
+  /**
+   * Sets an html element as the parent of all the game
+   * information
+   * @param {html} element An html element
+   */
+  setInfoElement(element) {
+    this.infoElement = element;
+    this.genInfo();
+    if (this.docData) 
+      this.updateInfo(docData);
   }
 
   get gameBoard() {
@@ -227,6 +241,7 @@ class TicTacToe {
         }
         this.drawTurn(x, y, this.uid);
         this.isYourTurn = false;
+        this.updateInfo(this.docData);
       } else {
         alert('Invalid move');
         console.log(result);
@@ -252,6 +267,8 @@ class TicTacToe {
   async drawCurrentGame() {
     const doc = await this.dbRef.get();
     const data = doc.data();
+    if (this.infoElement)
+      this.updateInfo(data);
     if (data.users.length < 2) {
       this.isYourTurn = false;
       return;
@@ -268,6 +285,7 @@ class TicTacToe {
     } else {
       this.isYourTurn = data.history.lastMove.uid === this.opponentUid;
     }
+    this.docData = data;
   }
 
   /**
@@ -316,6 +334,73 @@ class TicTacToe {
       }
     }
     game.docData = data;
+    if (game.infoElement)
+      game.updateInfo(data);
+  }
+
+  genInfo() {
+    this.infoElement.innerHtml = "";
+
+    // Static elements
+    let title = TicTacToe.genElement("h3", "game-info-title");
+    title.textContent = "Game Info";
+    this.infoElement.appendChild(title);
+
+    // Dynamic elements
+    let status = TicTacToe.genElement("p", "game-info-status");
+    this.infoElement.appendChild(status);
+    let turn = TicTacToe.genElement("p", "game-info-turn");
+    this.infoElement.appendChild(turn);
+  }
+
+  /**
+   * Creates a new html element with a class name
+   * @param {string} tag An html tag
+   * @param {string} className A class name
+   */
+  static genElement(tag, className="") {
+    let element = document.createElement(tag);
+    element.classList.add(className);
+    return element;
+  }
+
+  /**
+   * Populates an html element with 
+   * @param {object} data Data from game
+   */
+  updateInfo(data) {
+    if (data.gameOn) {
+      if (data.users.length == 2) {
+        this.infoElement
+          .querySelector(".game-info-status")
+          .textContent = "Game in progress.";
+        this.infoElement
+          .querySelector(".game-info-turn")
+          .textContent = this.isYourTurn ? "It's your turn" : "It's your opponent's turn";
+      } else {
+        this.infoElement
+          .querySelector(".game-info-status")
+          .textContent = "Please wait for opponent to join the game.";
+        this.infoElement
+          .querySelector(".game-info-turn")
+          .textContent = "";
+      }
+    } else {
+      let winText;
+      if (this.winner == this.uid) {
+        winText = "You won! ";
+      } else if (this.winner == this.opponentUid) {
+        winText = "Your opponent won. ";
+      } else {
+        winText = "No one won. ";
+      }
+      this.infoElement
+          .querySelector(".game-info-status")
+          .textContent = winText + "Please join a new lobby to start another game.";
+      this.infoElement
+            .querySelector(".game-info-turn")
+            .textContent = "";
+    }
   }
 
   /**

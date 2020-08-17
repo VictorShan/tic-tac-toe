@@ -12,7 +12,6 @@
 
   function init() {
     addEventListeners();
-    displayInstructions();
   }
 
   function addEventListeners() {
@@ -21,22 +20,42 @@
       signInAnonymously();
       game = null;
     });
-    document.getElementById("submit-lobby").addEventListener("click", enterLobby);
+    document.getElementById("lobby-form").addEventListener("submit", enterLobby);
   }
 
+  /**
+   * Creates a new tic tac toe game by first removing the old one (if exists)
+   * @param {string} uid User ID from firebase
+   * @param {string} lobbyId Lobby ID
+   */
   function setupGame(uid, lobbyId) {
-    game = new TicTacToe(db.collection('lobbies').doc(lobbyId), 500, 500, uid, lobbyId);    
-    let main = document.querySelector("main");
+    game = new TicTacToe(db.collection('lobbies').doc(lobbyId), 500, 500, uid, lobbyId);   
+    let gameContainer = document.getElementById("game");
+    let gameInfo = document.getElementById("game-info");
     let oldBoard = document.getElementById("game-board");
-    if (oldBoard) {
-      main.removeChild(oldBoard);
-    }
+    if (oldBoard)
+      oldBoard.remove();
+    if (gameInfo)
+      gameInfo.remove();
+
+    // Make into method?
     let gameBoard = game.gameBoard;
     gameBoard.id = "game-board";
-    main.appendChild(gameBoard);
+    gameContainer.appendChild(gameBoard);
+
+    gameInfo = document.createElement("section");
+    gameInfo.id = "game-info";
+    gameContainer.appendChild(gameInfo);
+    game.setInfoElement(gameInfo);
   }
 
-  async function enterLobby() {
+  /**
+   * Stop default form submission and try to create a new
+   * tic tac toe game by calling server.
+   * @param {Event} e The event of form submission
+   */
+  async function enterLobby(e) {
+    e.preventDefault();
     let lobbyId = document.getElementById("lobby-id").value;
     let uid = firebase.auth().currentUser.uid;
     // TODO: display message here
@@ -62,6 +81,10 @@
     }
   }
 
+  /**
+   * Check is promise from server is OK
+   * @param {promise} res A promise from server
+   */
   function checkStatus(res) {
     if (res.ok) {
       return res;
@@ -70,6 +93,9 @@
     }
   }
 
+  /**
+   * Initialize firebase auth, firestore, and analytics. Signs in anonymously
+   */
   function initFirebase() {
     // Your web app's Firebase configuration
     const firebaseConfig = {
@@ -89,6 +115,9 @@
     signInAnonymously();
   }
 
+  /**
+   * Signs in anonymously using firebase
+   */
   function signInAnonymously() {
     firebase.auth().signInAnonymously().catch((error) => {
       let errorCode = error.code;
@@ -97,16 +126,7 @@
     })
   }
 
-  /**
-   * Displays the instructions from firebase /public/instructions
-   */
-  async function displayInstructions() {
-    let doc = await db.collection('public').doc('instructions').get();
-    if (doc.exists) {
-      let instructions = doc.data();
-      document.getElementById('instructions-text').textContent = instructions["instructions-text"];
-    } else {
-      document.getElementById('instructions-text').textContent = "No instructions found. Do your best!";
-    }
+  function ticTacToeInfo(docData) {
+
   }
 })();
