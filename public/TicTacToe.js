@@ -143,19 +143,16 @@ class TicTacToe {
    * Check if there is a winner and draw the winning line if there is.
    */
   checkWin() {
-    if (!this.winner) {
+    if (this.winner === undefined) {
+      // No winner yet
       return;
     }
     if (this.winner === this.uid) {
-      this.isYourTurn = false;
       this.displayWin();
-
     } else if (this.winner === this.opponentUid) {
-      this.isYourTurn = false;
       this.displayLoss();
-    } else {
-      console.error("Someone not part of the game won?", this.winner);
     }
+    this.isYourTurn = false;
   }
 
   /**
@@ -235,9 +232,12 @@ class TicTacToe {
         body: JSON.stringify(data)});
       // TODO: Clean up this code later
       if (result.status === 200) {
+        result = await result.json();
         if (result.winner) {
           this.winningLine = result.path;
           this.winner = result.winner;
+        } else if (result.winner === false) {
+          this.winner = false;
         }
         this.drawTurn(x, y, this.uid);
         this.isYourTurn = false;

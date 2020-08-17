@@ -58,7 +58,7 @@ app.post('/makeMove', async (req, res) => {
     if (!doc.exists)
       res.status(404).send("Lobby not found")
     let result = await newMove(req.body, doc.data());
-    console.log("Move result:",);
+    console.log("Move result:", result);
     res.status(result.status).send(result.message);
   } catch (error) {
     console.error(error);
@@ -172,12 +172,17 @@ async function newMove(reqBody, data) {
     }
   }
 
-  let message = { status: 200 };
+  let message = {};
   if (winner === null) {
-    // Do nothing, no winners
+    // Do nothing, game in progress
   } else if (winner === false) {
     // Tie situation
+    updateData[`history.lastWinner`] = {
+      path: JSON.stringify([]),
+      uid: false
+    }
     updateData.gameOn = false;
+    message.winner = false;
     message.path = [];
   } else if (winner === data.users[0]) {
     newWinner(data, updateData, data.users[0], path);
@@ -203,9 +208,9 @@ function determineWinner(docData) {
   let path0 = winCondition(docData.history[docData.users[0]]);
   let path1 = winCondition(docData.history[docData.users[1]]);
   if (path0) {
-    return [docData.users[0], path];
+    return [docData.users[0], path0];
   } else if (path1) {
-    return [docData.users[1], path];
+    return [docData.users[1], path1];
   } else if (docData.history[docData.users[0]].length + docData.history[docData.users[1]].length === 9) {
     return [false, null];
   }
