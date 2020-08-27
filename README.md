@@ -21,3 +21,4 @@ Players must be on different browsers (Chrome, Firefox, etc.) or different devic
 - Automatic matchmaking
 - Simple AI to play against
 - Replay/multiple matches per lobby
+- Mobile friendly
