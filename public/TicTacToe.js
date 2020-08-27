@@ -161,8 +161,6 @@ class TicTacToe {
   displayWin() {
     this.ctx.strokeStyle = 'green';
     this.drawWinningLine(this.ctx);
-    if (this.serverObserver)
-      this.serverObserver();
   } 
 
   /**
@@ -171,8 +169,6 @@ class TicTacToe {
   displayLoss() {
     this.ctx.strokeStyle = 'red';
     this.drawWinningLine(this.ctx);
-    if (this.serverObserver)
-      this.serverObserver();
   }
 
   /**
@@ -391,9 +387,9 @@ class TicTacToe {
       }
     } else {
       let winText;
-      if (this.winner == this.uid) {
+      if (this.winner === this.uid) {
         winText = "You won! ";
-      } else if (this.winner == this.opponentUid) {
+      } else if (this.winner === this.opponentUid) {
         winText = "Your opponent won. ";
       } else {
         winText = "No one won. ";
@@ -404,6 +400,8 @@ class TicTacToe {
       this.infoElement
             .querySelector(".game-info-turn")
             .textContent = "";
+      if (this.serverObserver)
+        this.serverObserver();
     }
   }
 
