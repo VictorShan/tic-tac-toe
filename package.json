@@ -1,19 +1,23 @@
 {
   "name": "tic-tac-toe",
-  "version": "1.0.0",
-  "description": "Multiplayer tic-tac-toe",
-  "main": "app.js",
+  "version": "0.1.0",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "deploy": "rm -rf node_modules/.cache && next build && next export && firebase deploy --only hosting"
   },
-  "author": "Victor",
-  "license": "ISC",
   "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.17.1",
-    "firebase": "^7.17.2",
-    "firebase-admin": "^9.0.0",
-    "multer": "^1.4.2",
-    "nodemon": "^2.0.4"
+    "bootstrap": "^4.5.2",
+    "next": "9.5.3",
+    "react": "16.13.1",
+    "react-bootstrap": "^1.3.0",
+    "react-dom": "16.13.1",
+    "sass": "^1.26.10"
+  },
+  "devDependencies": {
+    "@types/node": "^14.10.0",
+    "typescript": "^4.0.2"
   }
 }

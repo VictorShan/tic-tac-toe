@@ -1,24 +1,30 @@
-# Tic-Tac-Toe
-Realtime, multiplayer tic-tac-toe game using firebase.
+This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
-This project is still incomplete. There are additional features that will be added and bugs that will be fixed.
-So far, the basic features of the project works.
+## Getting Started
 
-## How to play
-Click the link to go to the game page.
-[https://tic-tac-toe-82af8.web.app/](https://tic-tac-toe-82af8.web.app/)
+First, run the development server:
 
-To play, enter a lobby ID to create or enter a lobby. Lobbies will be recycled after 3 hours.
-Another player must also enter the same lobby ID to join your game. Once they enter, the game starts.
-There is no indicator for whether or not the opponent is still there. This feature will be added soon.
+```bash
+npm run dev
+# or
+yarn dev
+```
 
-Once the game ends, players will need to create a new lobby to play again.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-Players must be on different browsers (Chrome, Firefox, etc.) or different devices to play against each other.
+You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
 
+## Learn More
 
-## Future Features
-- Automatic matchmaking
-- Simple AI to play against
-- Replay/multiple matches per lobby
-- Mobile friendly
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/import?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
