@@ -12,7 +12,10 @@ export default function SignInOptions() {
 
 const notSignedInOptions = (router: NextRouter) => {
   const goToSignIn = () => router.push('/signIn')
-  return <Button onClick={goToSignIn} variant={'outline-dark'}>Sign In</Button>
+  const disabled = router.pathname === '/game'
+  console.log(router.pathname);
+  
+  return <Button onClick={goToSignIn} variant={'outline-dark'} disabled={disabled}>Sign In</Button>
 }
 
 const signedInOptions = (auth: AuthType) => {

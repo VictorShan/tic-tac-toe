@@ -22,7 +22,7 @@ export default function SignInUpForm({ isSignIn }: propsType) {
   const handleSubmit = async (event) => {
     event.preventDefault()
     setValidated(true)
-    if (!username || !email || !password || !email.match(/[\.a-zA-Z0-9]+@[\.a-zA-Z0-9]+\.[a-zA-Z0-9]+/g)) {
+    if ((!isSignIn && !username) || !email || !password || !email.match(/[\.a-zA-Z0-9]+@[\.a-zA-Z0-9]+\.[a-zA-Z0-9]+/g)) {
       // revalidate
     } else if (!isSignIn && password !== verifyPass) {
       setVerifyPass('')
@@ -59,11 +59,12 @@ export default function SignInUpForm({ isSignIn }: propsType) {
         <Form.Group controlId={`form${purpose}Email`}>
           <Form.Label>Email address</Form.Label>
           <Form.Control
-            type="email"
+            type={'email'}
             value={email}
             onChange={e => setEmail(e.target.value)}
-            placeholder="Enter email" required
-            pattern={'[\.a-zA-Z0-9]+@[\.a-zA-Z0-9]+\.[a-zA-Z0-9]+'}/>
+            placeholder="Enter email"
+            required
+            pattern={'[\\.a-zA-Z0-9]+@[\\.a-zA-Z0-9]+\\.[a-zA-Z0-9]+'}/>
           <Form.Control.Feedback type="invalid">Please enter a valid email!</Form.Control.Feedback>
         </Form.Group>
 
