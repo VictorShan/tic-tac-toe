@@ -1,23 +1,23 @@
-import { firebaseType, withFirebase, FirebaseCtx } from "../utils/Firebase";
+import { useAuth, AuthType } from "../utils/Firebase";
 import Form from 'react-bootstrap/Form'
 import Button from 'react-bootstrap/Button'
 import styles from '../styles/SignInUpForm.module.sass'
 import { useState } from "react";
+import { useRouter } from "next/router";
 
 type propsType = {
-  firebase: firebaseType
   isSignIn: boolean
 }
 
-const SignInUpForm = ({ firebase, isSignIn }: propsType) => {
+export default function SignInUpForm({ isSignIn }: propsType) {
   const purpose = isSignIn ? "SignIn" : "SignUp"
-  const auth = firebase.auth
+  const auth = useAuth()
+  const router = useRouter()
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [verifyPass, setVerifyPass] = useState('')
   const [validated, setValidated] = useState(false)
-  console.log(validated, password, verifyPass)
 
   const handleSubmit = async (event) => {
     event.preventDefault()
@@ -26,12 +26,12 @@ const SignInUpForm = ({ firebase, isSignIn }: propsType) => {
       setVerifyPass('')
     } else {
       try {
-        isSignIn ? await firebase.signIn(email, password) :
-                    await firebase.signUp(username, email, password)
+        isSignIn ? await auth.signIn(email, password) :
+                    await auth.signUp(username, email, password)
       } catch (err) {
         console.log(err)
       }
-      console.log("Signed In:", firebase.user)
+      router.back()
     }
   }
   
@@ -93,5 +93,3 @@ const SignInUpForm = ({ firebase, isSignIn }: propsType) => {
     </Form>
   )
 }
-
-export default withFirebase(SignInUpForm)
