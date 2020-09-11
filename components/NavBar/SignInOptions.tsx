@@ -11,7 +11,7 @@ export default function SignInOptions() {
 }
 
 const notSignedInOptions = (router: NextRouter) => {
-  if (router.pathname.match(/\/game*/g)) {
+  if (router.pathname.match(/\/game\/.+/g)) {
     return <Button variant={'outline-dark'} disabled={true}>Sign In</Button>
   } else if (router.pathname === '/signIn') {
     return <Button onClick={() => router.back()} variant={'outline-dark'} >Back</Button>
