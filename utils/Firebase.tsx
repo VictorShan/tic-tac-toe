@@ -42,8 +42,8 @@ function useProvideAuth(): AuthType {
             .auth()
             .createUserWithEmailAndPassword(email, password)
             .then(res => {
-              setUser(res.user)
               res.user.updateProfile({ displayName: username })
+                .then(() => setUser(firebase.auth().currentUser))
               return res.user
             })
   }
