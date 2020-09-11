@@ -1,7 +1,6 @@
 import Head from 'next/head'
 import Button from 'react-bootstrap/Button'
 import styles from '../styles/Home.module.sass'
-import Link from 'next/link'
 
 export default function Home() {
   return (
