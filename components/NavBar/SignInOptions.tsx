@@ -11,11 +11,14 @@ export default function SignInOptions() {
 }
 
 const notSignedInOptions = (router: NextRouter) => {
-  const goToSignIn = () => router.push('/signIn')
-  const disabled = router.pathname === '/game'
-  console.log(router.pathname);
-  
-  return <Button onClick={goToSignIn} variant={'outline-dark'} disabled={disabled}>Sign In</Button>
+  if (router.pathname.match(/\/game*/g)) {
+    return <Button variant={'outline-dark'} disabled={true}>Sign In</Button>
+  } else if (router.pathname === '/signIn') {
+    return <Button onClick={() => router.back()} variant={'outline-dark'} >Back</Button>
+  } else {
+    const goToSignIn = () => router.push('/signIn')
+    return <Button onClick={goToSignIn} variant={'outline-dark'}>Sign In</Button>
+  } 
 }
 
 const signedInOptions = (auth: AuthType) => {
