@@ -8,6 +8,7 @@ export default function Home() {
       <Head>
         <title>Tic Tac Toe</title>
         <link rel="icon" href="/favicon.ico" />
+        <meta name={'description'} content={"A Tic Tac Toe where users can play against other players or against an AI"}/>
       </Head>
       <main className={styles.main}>
         <div className={styles.title}>
