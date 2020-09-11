@@ -2,7 +2,7 @@ import Navbar from 'react-bootstrap/Navbar'
 
 export default function NavBar() {
   return (
-    <Navbar fixed='top' bg='light' expand='sm'>
+    <Navbar sticky='top' bg='light' expand='sm'>
       <Navbar.Brand href="#home">
         <img
           src="/vercel.svg"
@@ -11,7 +11,7 @@ export default function NavBar() {
           className="d-inline-block align-top"
           alt="React Bootstrap logo"
         />{' '}
-        Navbar with text
+        Tic Tac Toe
       </Navbar.Brand>
       <Navbar.Toggle />
       <Navbar.Collapse className="justify-content-end">
