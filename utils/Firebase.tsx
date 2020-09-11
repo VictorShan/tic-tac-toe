@@ -23,18 +23,48 @@ const withFirebase = Component => props => (
   </FirebaseCtx.Consumer>
 )
 
-type firebaseType = {
-  auth: firebase.auth.Auth,
-  db: firebase.firestore.CollectionReference
-}
+type firebaseType = Firebase
+// {
+//   auth: firebase.auth.Auth,
+//   db: firebase.firestore.CollectionReference,
+//   user: firebase.User | undefined,
+//   updateUser: () => {}
+// }
 
-export default function firebase() {
-  if (app.apps.length == 0) {
-    app.initializeApp(firebaseConfig)
+export default class Firebase {
+
+  auth: firebase.auth.Auth
+  db: firebase.firestore.CollectionReference
+  user: firebase.User | undefined
+  google: firebase.auth.GoogleAuthProvider_Instance
+  constructor() {
+    if (app.apps.length == 0) {
+      app.initializeApp(firebaseConfig)
+    }
+    this.auth = app.auth()
+    this.db = app.firestore().collection('games')
+    this.user = app.auth().currentUser
+    this.google = new app.auth.GoogleAuthProvider()
   }
-  return {
-    auth: app.auth(),
-    db: app.firestore().collection('games')
+
+  async signIn(email: string, password: string) {
+    let user = await this.auth.signInWithEmailAndPassword(email, password)
+    this.user = user.user
+  }
+
+  async signUp(username: string, email: string, password: string) {
+    let user = await this.auth.createUserWithEmailAndPassword(email, password)
+    await user.user.updateProfile({ displayName: username })
+    this.user = user.user
+  }
+
+  async signOut() {
+    this.auth.signOut()
+    this.user = undefined
+  }
+
+  async signInWithGoogle() {
+    this.user = (await this.auth.signInWithPopup(this.google)).user
   }
 }
 
