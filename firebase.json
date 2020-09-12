@@ -7,6 +7,12 @@
   },
   "hosting": {
     "public": "./out",
+    "rewrites": [
+      {
+        "source": "**",
+        "function": "game"
+      }
+    ],
     "ignore": [
       "firebase.json",
       "**/.*",

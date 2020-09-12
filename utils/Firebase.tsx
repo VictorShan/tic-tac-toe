@@ -79,6 +79,13 @@ function useProvideAuth(): AuthType {
             })
   }
 
+  const getGameDb = (lobbyId: string): firebase.firestore.DocumentReference => {
+    return firebase
+            .firestore()
+            .collection('games')
+            .doc(lobbyId)
+  }
+
   useEffect(() => {
     const unsubscribe = firebase.auth().onAuthStateChanged(user => {
       if (user) {
@@ -97,7 +104,8 @@ function useProvideAuth(): AuthType {
     signUp,
     signOut,
     signInWithGoogle,
-    signInAnonymously
+    signInAnonymously,
+    
   }
 }
 
@@ -107,7 +115,7 @@ type AuthType = {
   signUp: (username: string, email: string, password: string) => Promise<firebase.User | null>,
   signOut: () => Promise<void>,
   signInWithGoogle: () => Promise<firebase.User | null>,
-  signInAnonymously: () => Promise<firebase.User | null>
+  signInAnonymously: () => Promise<firebase.User | null>,
 }
 
 export type { AuthType }
