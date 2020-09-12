@@ -105,7 +105,7 @@ function useProvideAuth(): AuthType {
     signOut,
     signInWithGoogle,
     signInAnonymously,
-    
+    getGameDb
   }
 }
 
@@ -116,6 +116,7 @@ type AuthType = {
   signOut: () => Promise<void>,
   signInWithGoogle: () => Promise<firebase.User | null>,
   signInAnonymously: () => Promise<firebase.User | null>,
+  getGameDb: (lobbyId: string) => firebase.firestore.DocumentReference
 }
 
 export type { AuthType }
