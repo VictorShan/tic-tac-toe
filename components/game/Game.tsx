@@ -16,6 +16,8 @@ export default function Game({ lobbyId }: propsType) {
     processDoc(doc, lobbyId, setInfo, setGameBoard, uidIsX, setUidIsX)
   }
 
+  const handleMove = (row: number, col: number) => makeMove(auth.user.uid, lobbyId, row, col)
+
   useEffect(() => {
     const unsubscribe = doc.onSnapshot({}, doc => updateData(doc))
     return unsubscribe
@@ -24,7 +26,7 @@ export default function Game({ lobbyId }: propsType) {
   return (
     <div className={styles.game}>
       <div className={styles['board-container']}>
-        <GameBoard boardData={gameBoard} onClick={(row: number, col: number) => { console.log(row, col) }}/>
+        <GameBoard boardData={gameBoard} onClick={handleMove}/>
       </div>
       <GameInfo gameInfo={info} />
     </div>
@@ -55,12 +57,13 @@ const processDoc = (doc: firebase.firestore.DocumentSnapshot,
 
 const formatBoard = (data: firebase.firestore.DocumentData, uidIsX): string[][] => {
   let newBoard = []
+  const playerUids = data.players.map(player => player.uid)
   for (let row in data.board) {
     let newRow = []
     for(let uid of data.board[row]) {
       if (uid === uidIsX) {
         newRow.push("X")
-      } else if (data.players.includes(uid)) {
+      } else if (playerUids.includes(uid)) {
         newRow.push("O")
       } else {
         newRow.push("")
@@ -82,6 +85,26 @@ const updateInfo = (data: firebase.firestore.DocumentData, lobbyId: string, setI
     gameWinner: data.gameStatus
   }
   setInfo(newData)
+}
+
+const makeMove = async(uid: string, lobbyId: string, row: number, col: number) => {
+  try {
+    const res = await fetch(
+      'http://localhost:5001/tic-tac-toe-82af8/us-central1/game/makeMove',
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json"},
+        body: JSON.stringify({ uid, lobbyId, move: { row, col } })
+      }
+    )
+    console.log(res);
+    
+    if (!res.ok) {
+      throw Error(await res.text())
+    }
+  } catch (err) {
+    console.log("Failed to make move:", err.message);
+  }
 }
 
 type propsType = {
