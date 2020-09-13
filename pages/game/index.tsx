@@ -9,6 +9,7 @@ import gameIndexStyles from '../../styles/gameIndex.module.sass'
 import { useRouter } from 'next/router'
 import { useAuth } from '../../utils/Firebase'
 import ModialWarning from '../../components/ModialWarning'
+import { getDisplayName } from 'next/dist/next-server/lib/utils'
 
 const styles = {
   ...indexStyles,
@@ -28,7 +29,7 @@ export default function gameIndex() {
     if (user === null) {
       user = await auth.signInAnonymously()
     }
-    if (await enterLobby(lobbyId, user.uid)) {
+    if (await enterLobby(lobbyId, user.uid, user.displayName)) {
       router.push(`/game/${lobbyId}`)
     } else {
       setValidLobby(false)
@@ -89,14 +90,14 @@ export default function gameIndex() {
   )
 }
 
-const enterLobby = async (lobbyId: string, uid: string): Promise<boolean> => {
+const enterLobby = async (lobbyId: string, uid: string, displayName: string): Promise<boolean> => {
   try {
     const response = fetch(
       'http://localhost:5001/tic-tac-toe-82af8/us-central1/game/enterLobby',
       {
         method: "POST",
         headers: { "Content-Type": "application/json"},
-        body: JSON.stringify({ uid, lobbyId})
+        body: JSON.stringify({ uid, lobbyId, displayName })
       }
     )
     let result = await response
