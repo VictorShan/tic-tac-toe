@@ -73,32 +73,29 @@ async function createLobby(uid: string, lobbyId: string, displayName: string): P
 }
 
 async function enterLobby(uid: string, lobbyId: string, displayName: string, data: FirebaseFirestore.DocumentData): Promise<resString> {
-  const doc = db.collection('games').doc(lobbyId)
-  console.log(data)
-  console.log(data.players, data.turn, data.lastMoveTime);
-  
-  if (data.players.includes({ uid, displayName })) {
+  const doc = db.collection('games').doc(lobbyId) 
+  if (admin.firestore.Timestamp.now().seconds - data.lastMoveTime.seconds
+              > LOBBY_RECYCLE_HRS * 60 * 60) {
+    return createLobby(uid, lobbyId, displayName)
+  } else if (data.players.includes({ uid, displayName })) {
     try {
       await doc.update({
-        lastMoveTime: admin.firestore.FieldValue.serverTimestamp(),
-        players: [{uid: uid, displayName: displayName}]
+        lastMoveTime: admin.firestore.FieldValue.serverTimestamp()
       })
       return { status: 202, message: `Revived lobby ${lobbyId}`}
     } catch (err) {
       return { status: 500, message: `Failed to re-enter lobby.`}
     }
-  } else if (admin.firestore.Timestamp.now().seconds - data.lastMoveTime.seconds
-              > LOBBY_RECYCLE_HRS * 60 * 60) {
-    return createLobby(uid, lobbyId, displayName)
   } else if (data.players.length === 2) {
     return { status: 304, message: `Lobby ${lobbyId} is full. Please use another lobby or try again later. Lobbies are` + 
                                     ` recycled after ${LOBBY_RECYCLE_HRS} hours of inactivity.`}
   } else {
+    // Enter an existing lobby
     try {
       const newData = {
         players: [...data.players, {uid: uid, displayName: displayName}],
         lastMoveTime: admin.firestore.FieldValue.serverTimestamp(),
-        [`score.${uid}`]: 0
+        [`score.${uid}`]: data.score[uid] || 0
       }
       await doc.update(newData)
       return { status: 202, message: `Joined lobby ${lobbyId}`}
@@ -127,7 +124,7 @@ app.post('/makeMove', async (req, res) => {
 
   const data = doc.data() || {}
   if (data === {}) {
-    res.status(500).send("Server Meltdown.") // Makes typescript happy
+    res.status(500).send("Server Meltdown.") // Should never happen
     return
   }
     
@@ -139,6 +136,7 @@ app.post('/makeMove', async (req, res) => {
   } else if (data.gameStatus) {
     res.status(423).send("Invalid move. Game has ended.")
   } else {
+    // User has authorization to make a move
     const response = await makeMove(req.body.uid, req.body.lobbyId, req.body.move, data)
     res.status(response.status).send(response.message)
   }  
@@ -157,11 +155,14 @@ async function makeMove(uid: string, lobbyId: string,
       const winner = checkWin(data.board)
       const newData: object = { board }
       if (winner) {
+        // Update Score?
         if (winner !== 'tie') {
           newData[`score.${winner}`] = data.score[winner] + 1
         }
+        // Set winner
         newData['gameStatus'] = winner
       } else {
+        // Switch Player Turn
         newData["turn"] = data.players[0].uid === uid ? data.players[1].uid : data.players[0].uid
       }
       lobbyRef.update(newData)
@@ -203,13 +204,39 @@ function checkDraw(board: { "0": string[], "1": string[], "2": string[] }) {
 
 // Clear Board
 app.post('/clearBoard', async (req, res) => {
-  if (!req.body || !req.body.lobby || !req.body.uid) {
+  if (!req.body || !req.body.lobbyId || !req.body.uid) {
     res.status(400).send("Please send both uid and lobbyId.")
     return
   }
+  const docRef = db.collection('games').doc(req.body.lobbyId)
+  // Check game state
+  const doc = await docRef.get()
+  if (!doc.exists) {
+    res.status(404).send("Game lobby does not exist.")
+    return
+  }
+  const data = doc.data()
 
-  // Game Finished?
-  
+  // Game is finished?
+  if (!data.gameStatus) {
+    res.status(412).send("Game has not ended so board cannot be cleared.")
+    return
+  }
+
+  // Should clear board
+  try {
+    docRef.update({
+      turn: data.turn === data.players[0].uid ? data.players[1].uid : data.players[0].uid,
+      board: CLEARED_BOARD,
+      gameStatus: ''
+    })
+    res.status(200).send(`Lobby ${req.body.lobbyId}'s game board has been cleared.`)
+    return
+  } catch (err) {
+    res.status(500).send(`Failed to clear game board for ${req.body.lobbyId}`)
+    return
+  }
+
 })
 
 export default app
