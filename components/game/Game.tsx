@@ -96,9 +96,7 @@ const makeMove = async(uid: string, lobbyId: string, row: number, col: number) =
         headers: { "Content-Type": "application/json"},
         body: JSON.stringify({ uid, lobbyId, move: { row, col } })
       }
-    )
-    console.log(res);
-    
+    )    
     if (!res.ok) {
       throw Error(await res.text())
     }

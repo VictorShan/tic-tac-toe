@@ -11,7 +11,6 @@ const CLEARED_BOARD = {
 const INDEXES = ["0", "1", "2"]
 
 admin.initializeApp()
-console.log(admin);
 
 const db = admin.firestore()
 
