@@ -18,7 +18,6 @@ export default function gameLobby() {
         <meta name={"Description"} content={"A multiplayer game of tic tac toe."} />
       </Head>
       <Game lobbyId={lobbyId} />
-    </>
-    
+    </>    
   )
 }

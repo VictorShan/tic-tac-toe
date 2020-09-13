@@ -82,7 +82,7 @@ const updateInfo = (data: firebase.firestore.DocumentData, lobbyId: string, setI
     player1,
     player2,
     turn: data.turn || DEFAULT_INFO_TYPE.turn,
-    gameWinner: data.gameStatus
+    gameStatus: data.gameStatus
   }
   setInfo(newData)
 }
