@@ -4,6 +4,11 @@ import Row from 'react-bootstrap/Row'
 import Image from 'react-bootstrap/Image'
 import styles from '../../styles/GameBoard.module.sass'
 
+const EMPTY_BOARD = [
+  ['','',''],
+  ['','',''],
+  ['','','']
+]
 
 type propsType = {
   boardData: string[][],
@@ -73,4 +78,29 @@ const genTile = (colIdx: number, row: string[], handleClick: (column: number) =>
       </Col>
     )
   }
+}
+
+const calculateWin = (board: string[][], uid: string): string[][] => {
+  const winBoard = EMPTY_BOARD
+  for (let i = 0; i < board.length; i++) {
+    // Horizontal and vertical
+    if (board[i][0] && board[i][0] === board[i][1] && board[i][1] === board[i][2]) {
+      winBoard[i][0] = winBoard[i][1] = winBoard[i][2] = uid === board[i][0] ? "green" : "red"
+    } else if (board[0][i] && board[0][i] === board[1][i] && board[1][i] === board[2][i]) {
+      winBoard[0][i] = winBoard[1][i] = winBoard[2][i] = uid === board[i][0] ? "green" : "red"
+    }
+    // If there was a horizontal or vertical line
+    if (winBoard !== EMPTY_BOARD) {
+      return winBoard
+    }
+  }
+
+  // Diagonals
+  if (board[0][0] && board[0][0] === board[1][1] && board[1][1] === board[2][2]) {
+    winBoard[0][0] = winBoard[1][1] = winBoard[2][2] = uid === board[0][0] ? "green" : "red"
+  } else if (board[0][2] && board[0][2] === board[1][1] && board[1][1] === board[2][0]) {
+    winBoard[0][2] = winBoard[1][1] = winBoard[2][0] = uid === board[2][0] ? "green" : "red"
+  }
+
+  return winBoard
 }
