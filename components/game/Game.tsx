@@ -101,7 +101,7 @@ const makeMove = async(uid: string, lobbyId: string, row: number, col: number) =
       throw Error(await res.text())
     }
   } catch (err) {
-    console.log("Failed to make move:", err.message);
+    console.error("Failed to make move:", err.message);
   }
 }
 

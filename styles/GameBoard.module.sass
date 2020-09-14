@@ -1,21 +1,21 @@
+$divider-stroke-size: 15px
+$tile-width-height: calc(100% - 2/3 * #{$divider-stroke-size})
+
 .board
+  --tile-px-size: calc(#{$tile-width-height} + 0px)
 
 .row
   height: fit-content
   
 .placeholder
   opacity: 0%
-  width: 100%
-  height: auto
-
-$board-line-size: 15px
 
 .hor-divider
-  height: $board-line-size
+  height: $divider-stroke-size
   background-color: black
 
 .vert-divider
-  width: $board-line-size
+  width: $divider-stroke-size
   background-color: black
 
 .img
@@ -23,6 +23,8 @@ $board-line-size: 15px
   height: auto
 
 .tile
+  width: $tile-width-height
+  height: $tile-width-height
   padding: 10px
   display: flex
   flex-direction: row

@@ -63,7 +63,7 @@ const genTile = (colIdx: number, row: string[], handleClick: (column: number) =>
           src={`/images/O.svg`}
           alt={row[colIdx]}
           onClick={() => handleClick(colIdx)}
-          className={styles.placeholder}/>
+          className={`${styles.placeholder} ${styles.img}`}/>
       </Col>
     )
   } else {

@@ -83,7 +83,7 @@ export default function gameIndex() {
         primaryOptionCallback={() => { router.push("/signIn") }}
         secondaryOptionText={"Continue Anonymously"}
         secondaryOptionCallback={() => { setRenderWarning(false) }}
-        onHide={() => {setRenderWarning(false)}}
+        onHide={() => { setRenderWarning(false)}}
       />
     </>
   )
