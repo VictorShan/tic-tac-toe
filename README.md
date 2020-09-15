@@ -14,7 +14,7 @@ There is no indicator for whether or not the opponent is still there. This featu
 
 Once the game ends, players will need to create a new lobby to play again.
 
-Players must be on different browsers (Chrome, Firefox, etc.) or different devices to play against each other.
+One of the players must be in incognito mode/private mode or on a different browsers (Chrome, Firefox, etc.) or using a different device to play against each other.
 
 
 ## Future Features
