@@ -5,7 +5,8 @@ This project is still incomplete. There are additional features that will be add
 So far, the basic features of the project works.
 
 ## How to play
-Click the link to go to the game page.
+
+Click the link to go to the game page. (It might take a second for servers to spin up)
 [https://tic-tac-toe-82af8.web.app/](https://tic-tac-toe-82af8.web.app/)
 
 To play, enter a lobby ID to create or enter a lobby. Lobbies will be recycled after 3 hours.
