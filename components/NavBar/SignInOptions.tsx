@@ -2,18 +2,21 @@ import { NextRouter, useRouter } from 'next/router'
 import Button from 'react-bootstrap/Button'
 import NavDropdown from 'react-bootstrap/NavDropdown'
 import { useAuth, AuthType } from '../../utils/Firebase'
-
+import cookie from 'js-cookie'
 
 export default function SignInOptions() {
   const router = useRouter()
   const auth = useAuth()
-  return auth.user ? signedInOptions(auth) : notSignedInOptions(router)
+  let user = auth.user
+  const userCookie = cookie.get('user')
+  if (!user && userCookie) {
+    auth.assignUser(JSON.parse(userCookie))
+  }
+  return user ? signedInOptions(auth, user) : notSignedInOptions(router)
 }
 
 const notSignedInOptions = (router: NextRouter) => {
-  if (router.pathname.match(/\/game\/.+/g)) {
-    return <Button variant={'outline-dark'} disabled={true}>Sign In</Button>
-  } else if (router.pathname === '/signIn') {
+  if (router.pathname === '/signIn') {
     return <Button onClick={() => router.back()} variant={'outline-dark'} >Back</Button>
   } else {
     const goToSignIn = () => router.push('/signIn')
@@ -21,8 +24,12 @@ const notSignedInOptions = (router: NextRouter) => {
   } 
 }
 
-const signedInOptions = (auth: AuthType) => {
-  const user = auth.user
+// if (router.pathname.match(/\/game\/.+/g)) {
+//   return <Button variant={'outline-dark'} disabled={true}>Sign In</Button>
+// } else 
+
+const signedInOptions = (auth: AuthType, user?: firebase.User) => {
+  user = auth.user || user
   const name = user.displayName || user.email || "Anonymous"
   return (
     <NavDropdown title={`Welcome ${name} `} id={'user-options-dropdown'}>

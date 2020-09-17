@@ -2,19 +2,24 @@ import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/firestore'
 import { useState, useEffect, useContext, createContext } from 'react'
+import Cookies from 'js-cookie'
+
+const COOKIE_SETTINGS = { expires: 7 }
 
 if (firebase.apps.length == 0) {
   firebase.initializeApp({
-    apiKey: "AIzaSyD7pmPno2KyfM1hf5l667yek2MwcFeIhjo",
-    authDomain: "tic-tac-toe-82af8.firebaseapp.com",
-    databaseURL: "https://tic-tac-toe-82af8.firebaseio.com",
-    projectId: "tic-tac-toe-82af8",
-    storageBucket: "tic-tac-toe-82af8.appspot.com",
-    messagingSenderId: "852004267914",
-    appId: "1:852004267914:web:9531e4eb0e6d19a1e44a73",
-    measurementId: "G-B2DW0S1R5E"
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+    databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DB_URL,
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+    measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
   })
 }
+
+// firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE)
 
 const authContext = createContext<AuthType | null>(null)
 
@@ -31,6 +36,7 @@ function useProvideAuth(): AuthType {
             .signInWithEmailAndPassword(email, password)
             .then(res => {
               setUser(res.user)
+              Cookies.set("user", JSON.stringify(res.user), COOKIE_SETTINGS)
               return res.user
             })
   }
@@ -44,6 +50,7 @@ function useProvideAuth(): AuthType {
             .then(res => {
               res.user.updateProfile({ displayName: username })
                 .then(() => setUser(firebase.auth().currentUser))
+              Cookies.set("user", JSON.stringify(res.user), COOKIE_SETTINGS)
               return res.user
             })
   }
@@ -53,6 +60,7 @@ function useProvideAuth(): AuthType {
             .auth()
             .signOut()
             .then(() => {
+              Cookies.remove('user', COOKIE_SETTINGS)
               setUser(null)
             })
   }
@@ -63,6 +71,7 @@ function useProvideAuth(): AuthType {
             .signInWithPopup(new firebase.auth.GoogleAuthProvider())
             .then(res => {
               setUser(res.user)
+              Cookies.set("user", JSON.stringify(res.user), COOKIE_SETTINGS)
               return res.user
             })
   }
@@ -73,8 +82,7 @@ function useProvideAuth(): AuthType {
             .signInAnonymously()
             .then(res => {
               setUser(res.user)
-              console.log("Anonymous User:", res.user)
-              console.log("Name:", res.user.displayName)
+              Cookies.set("user", JSON.stringify(res.user), COOKIE_SETTINGS)
               return res.user
             })
   }
@@ -85,6 +93,8 @@ function useProvideAuth(): AuthType {
             .collection('games')
             .doc(lobbyId)
   }
+
+  const assignUser = (user:firebase.User) => { setUser(user) }
 
   useEffect(() => {
     const unsubscribe = firebase.auth().onAuthStateChanged(user => {
@@ -100,6 +110,7 @@ function useProvideAuth(): AuthType {
 
   return {
     user,
+    assignUser,
     signIn,
     signUp,
     signOut,
@@ -111,6 +122,7 @@ function useProvideAuth(): AuthType {
 
 type AuthType = {
   user: firebase.User,
+  assignUser: (user:firebase.User) => void,
   signIn: (email: string, password: string) => Promise<firebase.User | null>,
   signUp: (username: string, email: string, password: string) => Promise<firebase.User | null>,
   signOut: () => Promise<void>,
