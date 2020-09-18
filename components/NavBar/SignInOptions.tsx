@@ -3,15 +3,19 @@ import Button from 'react-bootstrap/Button'
 import NavDropdown from 'react-bootstrap/NavDropdown'
 import { useAuth, AuthType } from '../../utils/Firebase'
 import cookie from 'js-cookie'
+import { useEffect } from 'react'
 
 export default function SignInOptions() {
   const router = useRouter()
   const auth = useAuth()
   let user = auth.user
   const userCookie = cookie.get('user')
-  if (!user && userCookie) {
-    auth.assignUser(JSON.parse(userCookie))
-  }
+  useEffect(() => {
+    if (!user && userCookie) {
+      auth.assignUser(JSON.parse(userCookie))
+    }
+  }, []);
+  
   return user ? signedInOptions(auth, user) : notSignedInOptions(router)
 }
 
