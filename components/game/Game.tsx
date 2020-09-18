@@ -8,7 +8,7 @@ import styles from '../../styles/Game.module.sass'
 export default function Game({ lobbyId }: propsType) {
   const auth = useAuth()
   const doc = auth.getGameDb(lobbyId)
-  const [info, setInfo] = useState<GameInfoType>(DEFAULT_INFO_TYPE)
+  const [info, setInfo] = useState<GameInfoType>({ ...DEFAULT_INFO_TYPE, lobbyId })
   const [gameBoard, setGameBoard] = useState([['','',''],['','',''],['','','']])
   const [uidIsX, setUidIsX] = useState('')
 
@@ -21,7 +21,7 @@ export default function Game({ lobbyId }: propsType) {
   useEffect(() => {
     const unsubscribe = doc.onSnapshot({}, doc => updateData(doc))
     return unsubscribe
-  }, [])
+  }, [lobbyId])
 
   return (
     <div className={styles.game}>
