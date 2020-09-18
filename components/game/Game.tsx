@@ -5,8 +5,9 @@ import { useAuth } from "../../utils/Firebase"
 import styles from '../../styles/Game.module.sass'
 
 
-export default function Game({ lobbyId, user }: propsType) {
-  const doc = useAuth().getGameDb(lobbyId)
+export default function Game({ lobbyId }: propsType) {
+  const auth = useAuth()
+  const doc = auth.getGameDb(lobbyId)
   const [info, setInfo] = useState<GameInfoType>(DEFAULT_INFO_TYPE)
   const [gameBoard, setGameBoard] = useState([['','',''],['','',''],['','','']])
   const [uidIsX, setUidIsX] = useState('')
@@ -15,7 +16,7 @@ export default function Game({ lobbyId, user }: propsType) {
     processDoc(doc, lobbyId, setInfo, setGameBoard, uidIsX, setUidIsX)
   }
 
-  const handleMove = (row: number, col: number) => makeMove(user.uid, lobbyId, row, col)
+  const handleMove = (row: number, col: number) => makeMove(auth.user.uid, lobbyId, row, col)
 
   useEffect(() => {
     const unsubscribe = doc.onSnapshot({}, doc => updateData(doc))
@@ -106,5 +107,4 @@ const makeMove = async(uid: string, lobbyId: string, row: number, col: number) =
 
 type propsType = {
   lobbyId: string,
-  user: { displayName: string, uid: string } | string
 }
