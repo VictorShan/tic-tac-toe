@@ -36,7 +36,7 @@ export default function GameInfo({ gameInfo }: propsType) {
       <h4>Player 1: {gameInfo.player1.displayName} {gameInfo.player1.uid === user.uid ? "(you)" : "" }</h4>
       <h4>Player 2: {gameInfo.player2.displayName} {gameInfo.player2.uid === user.uid ? "(you)" : "" }</h4>
       {showScores(gameInfo.player1, gameInfo.player2)}
-      {processGameStatus(auth.user, gameInfo.gameStatus, gameInfo.turn)}
+      {processGameStatus(auth.user, gameInfo, gameInfo.turn)}
       {showResetButton(gameInfo.gameStatus, auth.user, gameInfo.lobbyId)}
     </div>
   )
@@ -44,28 +44,36 @@ export default function GameInfo({ gameInfo }: propsType) {
 
 const showScores = (player1: userInfo, player2: userInfo) => {
   return (
+    <>
+    <hr />
     <section>
       <h3>Score:</h3>
       <h5>{player1.displayName}: {player1.score}</h5>
       <h5>{player2.displayName}: {player2.score}</h5>
     </section>
+    </>
   )
 }
 
-const processGameStatus = (user: firebase.User, gameStatus: string, turn: string) => {
+const processGameStatus = (user: firebase.User, gameInfo: GameInfoType, turn: string) => {
+  
+  let gameStatusText: string
   if (!user) {
-    return <h2>User not currently signed in.</h2>
-  } else if (!gameStatus) {
-    return <h2>It's {user.uid === turn ? "your" : "your opponent's"} turn.</h2>
+    gameStatusText = "User not currently signed in."
+  } else if (![gameInfo.player1.uid, gameInfo.player2.uid].includes(user.uid)) {
+    gameStatusText = "Not participating in match."
+  } else if (!gameInfo.gameStatus) {
+    gameStatusText = `It's ${user.uid === turn ? "your" : "your opponent's"} turn.`
   } else {
-    if (user.uid === gameStatus) {
-      return <h2>You Won!</h2>
-    } else if (gameStatus === 'tie') {
-      return <h2>Its a tie!</h2>
+    if (user.uid === gameInfo.gameStatus) {
+      gameStatusText =  "You Won!"
+    } else if (gameInfo.gameStatus === 'tie') {
+      gameStatusText = "Its a tie!"
     } else {
-      return <h2>You Lost. Better luck next time.</h2>
+      gameStatusText = "You Lost. Better luck next time."
     }
   }
+  return <h6><i>{gameStatusText}</i></h6>
 }
 
 

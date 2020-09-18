@@ -7,6 +7,7 @@ import { useState } from 'react'
 export default function gameLobby() {
   const router = useRouter()
   const [lobbyId, setLobbyId] = useState('')
+
   useEffect(() => {
     const { lobby } = router.query
     if (lobby) {
@@ -24,35 +25,3 @@ export default function gameLobby() {
     </>    
   )
 }
-
-// export const getStaticPaths:GetStaticProps = async (context:GetStaticPropsContext) => {
-//   return {
-//     props: {
-//       lobbyId: context.params.lobby
-//     }
-//   }
-// }
-
-// export async function getServerSideProps(ctx) {
-//   const { user } = nextCookies(ctx)
-//   const lobbyId = ctx.params.lobby
-//   console.log(typeof user, user);
-  
-//   if (!user) {
-//     if (ctx.req || ctx.res) {
-//       // In server
-//       ctx.res?.writeHead(302, { Location: '/signIn'})
-//       ctx.res?.end()
-//     } else {
-//       // On client
-
-//       Router.push('/signIn')
-//     }
-//   }
-//   return {
-//     props: {
-//       user,
-//       lobbyId
-//     }
-//   }
-// }

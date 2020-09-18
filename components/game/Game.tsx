@@ -41,7 +41,7 @@ const processDoc = (doc: firebase.firestore.DocumentSnapshot,
                     setUidIsX: (uid: string) => void) => {
  
   if (!doc.exists) {
-    setInfo(DEFAULT_INFO_TYPE)
+    setInfo({ ...DEFAULT_INFO_TYPE, lobbyId })
     setGameBoard([['','',''],['','',''],['','','']])
     return
   }
