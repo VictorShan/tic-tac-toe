@@ -3,7 +3,8 @@ import GameBoard from './GameBoard'
 import GameInfo, { GameInfoType, DEFAULT_INFO_TYPE } from './GameInfo'
 import { useAuth } from "../../utils/Firebase"
 import styles from '../../styles/Game.module.sass'
-
+import AlertContainer from "../Alerts/AlertContainer"
+import { AlertPropsType } from '../Alerts/AlertTimed'
 
 export default function Game({ lobbyId }: propsType) {
   const auth = useAuth()
@@ -11,12 +12,13 @@ export default function Game({ lobbyId }: propsType) {
   const [info, setInfo] = useState<GameInfoType>({ ...DEFAULT_INFO_TYPE, lobbyId })
   const [gameBoard, setGameBoard] = useState([['','',''],['','',''],['','','']])
   const [uidIsX, setUidIsX] = useState('')
+  const [alertData, setAlertData] = useState([])
 
   const updateData = (doc: firebase.firestore.DocumentSnapshot) => {
     processDoc(doc, lobbyId, setInfo, setGameBoard, uidIsX, setUidIsX)
   }
 
-  const handleMove = (row: number, col: number) => makeMove(auth.user.uid, lobbyId, row, col)
+  const handleMove = (row: number, col: number) => makeMove(auth.user.uid, lobbyId, row, col, setAlertData)
 
   useEffect(() => {
     const unsubscribe = doc.onSnapshot({}, doc => updateData(doc))
@@ -24,11 +26,14 @@ export default function Game({ lobbyId }: propsType) {
   }, [lobbyId])
 
   return (
-    <div className={styles.game}>
-      <div className={styles['board-container']}>
-        <GameBoard boardData={gameBoard} onClick={handleMove}/>
+    <div>
+      <AlertContainer alertData={alertData} />
+      <div className={styles.game}>
+        <div className={styles['board-container']}>
+          <GameBoard boardData={gameBoard} onClick={handleMove}/>
+        </div>
+        <GameInfo gameInfo={info} />
       </div>
-      <GameInfo gameInfo={info} />
     </div>
   )
 }
@@ -87,7 +92,8 @@ const updateInfo = (data: firebase.firestore.DocumentData, lobbyId: string, setI
   setInfo(newData)
 }
 
-const makeMove = async(uid: string, lobbyId: string, row: number, col: number) => {
+const makeMove = async(uid: string, lobbyId: string, row: number, col: number,
+                    setAlertData: (callback?: (oldData: AlertPropsType[]) => AlertPropsType[] | AlertPropsType[]) => void) => {
   try {
     const res = await fetch(
       'http://localhost:5001/tic-tac-toe-82af8/us-central1/game/makeMove',
@@ -101,6 +107,12 @@ const makeMove = async(uid: string, lobbyId: string, row: number, col: number) =
       throw Error(await res.text())
     }
   } catch (err) {
+    const newAlert: AlertPropsType = {
+      variant: "danger",
+      message: err.message,
+      duration: 3000
+    }
+    setAlertData(oldData => ([...oldData, newAlert]))    
     console.error("Failed to make move:", err.message);
   }
 }
