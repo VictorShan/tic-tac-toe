@@ -26,14 +26,14 @@ export default function Game({ lobbyId }: propsType) {
   }, [lobbyId])
 
   return (
-    <div>
-      <AlertContainer alertData={alertData} />
+    <div className={styles['game-container']}>
       <div className={styles.game}>
         <div className={styles['board-container']}>
           <GameBoard boardData={gameBoard} onClick={handleMove}/>
         </div>
         <GameInfo gameInfo={info} />
       </div>
+      <AlertContainer alertData={alertData} />
     </div>
   )
 }
