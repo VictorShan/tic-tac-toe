@@ -6,12 +6,15 @@ export type AlertPropsType = {
   variant: string,
   heading?: string,
   message: string,
-  duration?: number
+  duration?: number,
+  onClose?: () => void
 }
 
 
-export default function AlertTimed({ variant, heading, message, duration }: AlertPropsType) {
+export default function AlertTimed({ variant, heading, message, duration, onClose }: AlertPropsType) {
   const [show, setShow] = useState(true)
+  const handleClose = () => { onClose && onClose(); setShow(false) }
+  
   useEffect(() => {
     let timeout
     if (duration) {
@@ -24,8 +27,9 @@ export default function AlertTimed({ variant, heading, message, duration }: Aler
       clearTimeout(timeout)
     };
   }, []);
+  
   return (
-    <Alert show={show} variant={variant} onClose={() => setShow(false)} dismissible>
+    <Alert show={show} variant={variant} onClose={() => handleClose} dismissible>
       {heading && <Alert.Heading>{heading}</Alert.Heading>}
       <p>{message}</p>
     </Alert>
