@@ -31,7 +31,7 @@ export default function ModalWarning(
     size = size || 'sm'
     const renderSecondary = secondaryOptionText && secondaryOptionCallback
   return (
-    <Modial size={size} show={show} centered onHide={onHide}>
+    <Modial size={size} show={show} centered onHide={onHide} backdrop={'static'}>
       <Modial.Header>
         <Modial.Title>{title}</Modial.Title>
       </Modial.Header>

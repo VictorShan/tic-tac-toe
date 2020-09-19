@@ -7,8 +7,6 @@ import Collapse from 'react-bootstrap/Collapse'
 import indexStyles from '../../styles/index.module.sass'
 import gameIndexStyles from '../../styles/gameIndex.module.sass'
 import { useRouter } from 'next/router'
-import { useAuth } from '../../utils/Firebase'
-import ModialWarning from '../../components/ModialWarning'
 
 const styles = {
   ...indexStyles,
@@ -18,22 +16,7 @@ const styles = {
 export default function gameIndex() {
   const [lobbyId, setLobbyId] = useState('')
   const [showLobbyInput, setShowLobbyInput] = useState(false)
-  const [validLobby, setValidLobby] = useState(true)
-  const auth = useAuth()
-  const [renderWarning, setRenderWarning] = useState<boolean | null>(auth.user === null || auth.user.isAnonymous)
   const router = useRouter()
-  
-  const tryEnterLobby = async () => {
-    let user = auth.user
-    if (user === null) {
-      user = await auth.signInAnonymously()
-    }
-    if (await enterLobby(lobbyId, user.uid, user.displayName)) {
-      router.push(`/game/${lobbyId}`)
-    } else {
-      setValidLobby(false)
-    }
-  }
 
   return (
     <>
@@ -59,7 +42,6 @@ export default function gameIndex() {
           <InputGroup className={styles.inputLobby}>
             <FormControl
               formNoValidate
-              isInvalid={!validLobby}
               placeholder="Lobby ID"
               aria-label="Lobby ID"
               aria-describedby="basic-addon2"
@@ -68,45 +50,11 @@ export default function gameIndex() {
               onChange={e => setLobbyId(e.target.value)}
             />
             <InputGroup.Append>
-                <Button onClick={() => tryEnterLobby()} variant="outline-secondary">Play!</Button>
+                <Button onClick={() => router.push(`/game/${lobbyId}`)} variant="outline-secondary">Play!</Button>
             </InputGroup.Append>
           </InputGroup>
         </Collapse>
       </main>
-      <ModialWarning
-        title={"Warning: Starting a game anonymously"}
-        show={renderWarning}
-        size={"lg"}
-        message={"You are about to start a game anonymously. Please note that you will not able to" + 
-                  " access this lobby session if you later sign in or refresh page."}
-        primaryOptionText={"Sign In"}
-        primaryOptionCallback={() => { router.push("/signIn") }}
-        secondaryOptionText={"Continue Anonymously"}
-        secondaryOptionCallback={() => { setRenderWarning(false) }}
-        onHide={() => { setRenderWarning(false)}}
-      />
     </>
   )
-}
-
-const enterLobby = async (lobbyId: string, uid: string, displayName: string): Promise<boolean> => {
-  try {
-    const result = await fetch(
-      `${process.env.NEXT_PUBLIC_FIREBASE_FUNCTION_API}/enterLobby`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json"},
-        body: JSON.stringify({ uid, lobbyId, displayName })
-      }
-    )
-    if (result.ok) {
-      return true
-    } else {
-      console.log(await result.text())
-      return false
-    }
-  } catch (err) {
-    console.log(err)
-    return false
-  }
 }

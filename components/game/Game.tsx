@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import GameBoard from './GameBoard'
-import GameInfo, { GameInfoType, DEFAULT_INFO_TYPE } from './GameInfo'
+import GameInfo, { GameInfoType, DEFAULT_INFO_TYPE } from './GameInfo/GameInfo'
 import { useAuth } from "../../utils/Firebase"
 import styles from '../../styles/Game.module.sass'
 import AlertContainer from "../Alerts/AlertContainer"
