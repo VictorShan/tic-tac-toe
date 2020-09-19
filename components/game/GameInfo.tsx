@@ -1,6 +1,7 @@
 import styles from '../../styles/GameInfo.module.sass'
-import { useAuth } from '../../utils/Firebase'
+import { AuthType, useAuth } from '../../utils/Firebase'
 import Button from 'react-bootstrap/Button'
+import { useState } from 'react'
 
 export type GameInfoType = {
   lobbyId: string
@@ -28,13 +29,14 @@ type propsType = {
 export default function GameInfo({ gameInfo }: propsType) {
   const auth = useAuth()
   const user = auth.user || { uid: ''}
+  const [showWarning, setShowWarning] = useState(false)
   return (
     <div className={styles['info-container']}>
       <h1>Lobby ID: {gameInfo.lobbyId}</h1>
       <h4>Player 1: {gameInfo.player1?.displayName} {gameInfo.player1?.uid === user.uid ? "(you)" : "" }</h4>
       <h4>Player 2: {gameInfo.player2?.displayName} {gameInfo.player2?.uid === user.uid ? "(you)" : "" }</h4>
       {showScores(gameInfo.player1, gameInfo.player2)}
-      {processGameStatus(auth.user, gameInfo, gameInfo.turn)}
+      {processGameStatus(auth.user, gameInfo)}
       {showResetButton(gameInfo.gameStatus, auth.user, gameInfo.lobbyId)}
     </div>
   )
@@ -53,7 +55,7 @@ const showScores = (player1: userInfo, player2: userInfo) => {
   )
 }
 
-const processGameStatus = (user: firebase.User, gameInfo: GameInfoType, turn: string) => {
+const processGameStatus = (user: firebase.User, gameInfo: GameInfoType) => {
   
   let gameStatusText: string
   if (!user) {
@@ -63,7 +65,7 @@ const processGameStatus = (user: firebase.User, gameInfo: GameInfoType, turn: st
   } else if (!gameInfo.player1 || !gameInfo.player2) {
     gameStatusText = "Not enough players to start game."
   } else if (!gameInfo.gameStatus) {
-    gameStatusText = `It's ${user.uid === turn ? "your" : "your opponent's"} turn.`
+    gameStatusText = `It's ${user.uid === (gameInfo.turn || "No valid uid") ? "your" : "your opponent's"} turn.`
   } else {
     if (user.uid === gameInfo.gameStatus) {
       gameStatusText =  "You Won!"
@@ -100,5 +102,36 @@ const clearBoard = async (uid: string, lobbyId: string) => {
     }
   } catch (err) {
     console.error(err)
+  }
+}
+
+
+const handleJoinGame = (user: firebase.User, gameInfo: GameInfoType,
+                        setWarning: (show: boolean) => void) => {
+  if (!user) {
+    return setWarning(true)
+  }
+  enterLobby(gameInfo.lobbyId, user.uid, user.displayName || "Anonymous")
+}
+
+const enterLobby = async (lobbyId: string, uid: string, displayName: string): Promise<boolean> => {
+  try {
+    const result = await fetch(
+      `${process.env.NEXT_PUBLIC_FIREBASE_FUNCTION_API}/enterLobby`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json"},
+        body: JSON.stringify({ uid, lobbyId, displayName })
+      }
+    )
+    if (result.ok) {
+      return true
+    } else {
+      console.log(await result.text())
+      return false
+    }
+  } catch (err) {
+    console.log(err)
+    return false
   }
 }
