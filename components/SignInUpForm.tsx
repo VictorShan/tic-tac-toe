@@ -4,6 +4,7 @@ import Button from 'react-bootstrap/Button'
 import styles from '../styles/SignInUpForm.module.sass'
 import { useState } from "react";
 import { useRouter } from "next/router";
+import { useAlert } from "../utils/Alert";
 
 type propsType = {
   isSignIn: boolean
@@ -13,6 +14,7 @@ export default function SignInUpForm({ isSignIn }: propsType) {
   const purpose = isSignIn ? "SignIn" : "SignUp"
   const auth = useAuth()
   const router = useRouter()
+  const addAlerts = useAlert()
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -32,6 +34,8 @@ export default function SignInUpForm({ isSignIn }: propsType) {
                     await auth.signUp(username, email, password)
         router.back()
       } catch (err) {
+        addAlerts({ heading: isSignIn ? "Error Signing In" : "Error Signing Up",
+                    message: err.message, variant: "danger", duration: 5000 })
         console.log(err)
       }
       

@@ -4,7 +4,7 @@ import styles from '../styles/AlertContainer.module.sass'
 
 
 export type AlertType = {
-  addAlert: (message: string, variant?: string, heading?: string, duration?: number) => void,
+  addAlert: (data: AlertPropsType) => void,
   alerts: { [key: number]: AlertPropsType }
 }
 
@@ -20,10 +20,9 @@ function useProvideAlert(): AlertType {
   const [alertKV, setAlertKV] = useState<{ [key: number]: AlertPropsType }>({})
 
 
-  const addAlert = (message: string, variant?: string, heading?: string, duration?: number) => {
-    const newAlert: AlertPropsType = { message, variant, heading,
-                                        duration, onClose: () => { removeAlert(alertNumber) }}
-    setAlertKV(oldAlertKV => ({...oldAlertKV, [alertNumber]: newAlert}))
+  const addAlert = (data: AlertPropsType) => {
+    data.onClose = () => { removeAlert(alertNumber) }
+    setAlertKV(oldAlertKV => ({...oldAlertKV, [alertNumber]: data}))
     setAlertNumber(oldValue => oldValue + 1)
   }
 
@@ -44,8 +43,10 @@ export function ProvideAlert({ children }) {
   const { addAlert, alerts } = useProvideAlert()
   return (
     <alertContext.Provider value={addAlert}>
-      {children}
-      {translateAlertData(alerts)}
+      <div className={styles.wrapper}>
+        {children}
+        {translateAlertData(alerts)}
+      </div>
     </alertContext.Provider>
   )
 }
