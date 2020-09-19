@@ -49,9 +49,10 @@ function useProvideAuth(): AuthType {
             .createUserWithEmailAndPassword(email, password)
             .then(res => {
               res.user.updateProfile({ displayName: username })
-                .then(() => setUser(firebase.auth().currentUser))
+                .then(() => {setUser(res.user)})
+              const user = { ...res.user, displayName: username }
               Cookies.set("user", JSON.stringify(res.user), COOKIE_SETTINGS)
-              return res.user
+              return user
             })
   }
 
@@ -90,7 +91,7 @@ function useProvideAuth(): AuthType {
   const getGameDb = (lobbyId: string): firebase.firestore.DocumentReference => {
     return firebase
             .firestore()
-            .collection('games')
+            .collection(process.env.NEXT_PUBLIC_FIREBASE_COLLECTION)
             .doc(lobbyId)
   }
 

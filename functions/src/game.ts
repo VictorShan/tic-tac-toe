@@ -76,7 +76,7 @@ async function enterLobby(uid: string, lobbyId: string, displayName: string, dat
   if (admin.firestore.Timestamp.now().seconds - data.lastMoveTime.seconds
               > LOBBY_RECYCLE_HRS * 60 * 60) {
     return createLobby(uid, lobbyId, displayName)
-  } else if (data.players.includes({ uid, displayName })) {
+  } else if (data.players.map(player => player.uid).includes(uid)) {
     try {
       await doc.update({
         lastMoveTime: admin.firestore.FieldValue.serverTimestamp()
@@ -145,7 +145,7 @@ async function makeMove(uid: string, lobbyId: string,
                         move: { row: number, col: number},
                         data: FirebaseFirestore.DocumentData): Promise<resString> {
   const lobbyRef = db.collection('games').doc(lobbyId)
-  let board = data.board
+  const board = data.board
   if (board[move.row][move.col] !== '') {
     return { status: 406, message: "That is not a valid move."}
   } else {
@@ -164,7 +164,7 @@ async function makeMove(uid: string, lobbyId: string,
         // Switch Player Turn
         newData["turn"] = data.players[0].uid === uid ? data.players[1].uid : data.players[0].uid
       }
-      lobbyRef.update(newData)
+      await lobbyRef.update(newData)
       return { status: 202, message: `Move to ${move} made.`}
     } catch (err) {
       return { status: 500, message: "Server couldn't update."}
@@ -224,7 +224,7 @@ app.post('/clearBoard', async (req, res) => {
 
   // Should clear board
   try {
-    docRef.update({
+    await docRef.update({
       turn: data.turn === data.players[0].uid ? data.players[1].uid : data.players[0].uid,
       board: CLEARED_BOARD,
       gameStatus: ''

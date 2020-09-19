@@ -18,7 +18,7 @@ export default function Game({ lobbyId }: propsType) {
     processDoc(doc, lobbyId, setInfo, setGameBoard, uidIsX, setUidIsX)
   }
 
-  const handleMove = (row: number, col: number) => makeMove(auth.user.uid, lobbyId, row, col, setAlertData)
+  const handleMove = (row: number, col: number) => makeMove(auth.user?.uid, lobbyId, row, col, setAlertData)
 
   useEffect(() => {
     const unsubscribe = doc.onSnapshot({}, doc => updateData(doc))
@@ -96,7 +96,7 @@ const makeMove = async(uid: string, lobbyId: string, row: number, col: number,
                     setAlertData: (callback?: (oldData: AlertPropsType[]) => AlertPropsType[] | AlertPropsType[]) => void) => {
   try {
     const res = await fetch(
-      'http://localhost:5001/tic-tac-toe-82af8/us-central1/game/makeMove',
+      `${process.env.NEXT_PUBLIC_FIREBASE_FUNCTION_API}/makeMove`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json"},

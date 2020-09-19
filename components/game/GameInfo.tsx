@@ -4,17 +4,15 @@ import Button from 'react-bootstrap/Button'
 
 export type GameInfoType = {
   lobbyId: string
-  player1: userInfo,
-  player2: userInfo,
+  player1?: userInfo,
+  player2?: userInfo,
   turn: string,
   gameStatus?: string
 }
 
 export const DEFAULT_INFO_TYPE: GameInfoType = {
   lobbyId: "Unknown",
-  player1: { displayName: "None", uid: "player1", score: 0 },
-  player2: { displayName: "None", uid: "player2", score: 0 },
-  turn: 'Unknown',
+  turn: 'Unknown'
 }
 
 type userInfo = {
@@ -33,8 +31,8 @@ export default function GameInfo({ gameInfo }: propsType) {
   return (
     <div className={styles['info-container']}>
       <h1>Lobby ID: {gameInfo.lobbyId}</h1>
-      <h4>Player 1: {gameInfo.player1.displayName} {gameInfo.player1.uid === user.uid ? "(you)" : "" }</h4>
-      <h4>Player 2: {gameInfo.player2.displayName} {gameInfo.player2.uid === user.uid ? "(you)" : "" }</h4>
+      <h4>Player 1: {gameInfo.player1?.displayName} {gameInfo.player1?.uid === user.uid ? "(you)" : "" }</h4>
+      <h4>Player 2: {gameInfo.player2?.displayName} {gameInfo.player2?.uid === user.uid ? "(you)" : "" }</h4>
       {showScores(gameInfo.player1, gameInfo.player2)}
       {processGameStatus(auth.user, gameInfo, gameInfo.turn)}
       {showResetButton(gameInfo.gameStatus, auth.user, gameInfo.lobbyId)}
@@ -48,8 +46,8 @@ const showScores = (player1: userInfo, player2: userInfo) => {
     <hr />
     <section>
       <h3>Score:</h3>
-      <h5>{player1.displayName}: {player1.score}</h5>
-      <h5>{player2.displayName}: {player2.score}</h5>
+      <h5>{player1?.displayName || "Player 1"}: {player1?.score || 0}</h5>
+      <h5>{player2?.displayName || "Player 2"}: {player2?.score || 0}</h5>
     </section>
     </>
   )
@@ -60,8 +58,10 @@ const processGameStatus = (user: firebase.User, gameInfo: GameInfoType, turn: st
   let gameStatusText: string
   if (!user) {
     gameStatusText = "User not currently signed in."
-  } else if (![gameInfo.player1.uid, gameInfo.player2.uid].includes(user.uid)) {
+  } else if (![gameInfo.player1?.uid, gameInfo.player2?.uid].includes(user.uid)) {
     gameStatusText = "Not participating in match."
+  } else if (!gameInfo.player1 || !gameInfo.player2) {
+    gameStatusText = "Not enough players to start game."
   } else if (!gameInfo.gameStatus) {
     gameStatusText = `It's ${user.uid === turn ? "your" : "your opponent's"} turn.`
   } else {
@@ -88,7 +88,7 @@ const showResetButton = (showReset: any, user: firebase.User, lobbyId: string) =
 const clearBoard = async (uid: string, lobbyId: string) => {
   try {
     const res = await fetch(
-      'http://localhost:5001/tic-tac-toe-82af8/us-central1/game/clearBoard',
+        `${process.env.NEXT_PUBLIC_FIREBASE_FUNCTION_API}/clearBoard`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json"},

@@ -92,7 +92,7 @@ export default function gameIndex() {
 const enterLobby = async (lobbyId: string, uid: string, displayName: string): Promise<boolean> => {
   try {
     const result = await fetch(
-      'http://localhost:5001/tic-tac-toe-82af8/us-central1/game/enterLobby',
+      `${process.env.NEXT_PUBLIC_FIREBASE_FUNCTION_API}/enterLobby`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json"},

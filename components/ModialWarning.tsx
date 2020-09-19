@@ -27,8 +27,6 @@ export default function ModalWarning(
     onHide
   }: propsType) {
 
-    console.log("Show changed to", show)
-
     title = title || "Warning!"
     size = size || 'sm'
     const renderSecondary = secondaryOptionText && secondaryOptionCallback
