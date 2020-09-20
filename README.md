@@ -24,4 +24,6 @@ One of the players must be in incognito mode/private mode or on a different brow
 
 ## Future Features
 - Automatic matchmaking
+- Play a game locally on the same device/browser
 - Simple AI to play against
+- PWA
