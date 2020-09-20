@@ -38,13 +38,17 @@ export default function Game({ lobbyId }: propsType) {
   )
 }
 
+const MAX_LOBBY_INACTIVE_SECONDS = parseInt(process.env.NEXT_PUBLIC_MAX_LOBBY_INACTIVITY_HOURS) * 60 * 60
+
 const processDoc = (doc: firebase.firestore.DocumentSnapshot,
                     lobbyId: string,
                     setInfo: (info: GameInfoType) => void,
                     setGameBoard: (gameBoard: string[][]) => void,
                     uidIsX: string,
                     setUidIsX: (uid: string) => void) => {
-  if (!doc.exists) {
+  if (!doc.exists
+        || MAX_LOBBY_INACTIVE_SECONDS - doc.data().lastMoveTime.seconds
+            > MAX_LOBBY_INACTIVE_SECONDS) {
     setInfo({ ...DEFAULT_INFO, lobbyId })
     setGameBoard([['','',''],['','',''],['','','']])
     return
@@ -81,7 +85,6 @@ const formatBoard = (data: firebase.firestore.DocumentData, uidIsX): string[][] 
 const updateInfo = (data: firebase.firestore.DocumentData, lobbyId: string, setInfo: (info: GameInfoType) => void) => {
   const player1 = data.players[0] ? { ...data.players[0], score: data.score[data.players[0].uid]} : DEFAULT_INFO.player1
   const player2 = data.players[1] ? { ...data.players[1], score: data.score[data.players[1].uid]} : DEFAULT_INFO.player2
-  console.log("Firebase timestamp:", data.lastMoveTime);
   
   const newData = {
     lobbyId,
@@ -115,7 +118,6 @@ const makeMove = async(uid: string, lobbyId: string, row: number, col: number,
       duration: 3000
     }
     setAlertData(oldData => ([...oldData, newAlert]))    
-    console.error("Failed to make move:", err.message);
   }
 }
 

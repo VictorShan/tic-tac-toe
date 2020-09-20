@@ -1,14 +1,14 @@
 import styles from '../../../styles/GameInfo.module.sass'
 import { useAuth } from '../../../utils/Firebase'
 import Button from 'react-bootstrap/Button'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import ModalWarning from '../../ModalWarning'
 import { useRouter } from 'next/router'
 import { useAlert } from '../../../utils/Alert'
 import Scores from './Scores'
 import GameStatus from './GameStatus'
 import { AlertPropsType } from '../../Alerts/AlertTimed'
-import LobbyInactiveCountdown from './LobbyInactiveCountDown'
+import LobbyInactiveCountdown from './LobbyInactiveCountdown'
 
 export type GameInfoType = {
   lobbyId: string
@@ -55,6 +55,7 @@ export default function GameInfo({ gameInfo }: propsType) {
       <h1>Lobby ID: {gameInfo.lobbyId}</h1>
       <h4>Player 1: {gameInfo.player1?.displayName} {gameInfo.player1?.uid === user.uid ? "(you)" : "" }</h4>
       <h4>Player 2: {gameInfo.player2?.displayName} {gameInfo.player2?.uid === user.uid ? "(you)" : "" }</h4>
+      <hr className={styles.divider} />
       <Scores player1={gameInfo.player1} player2={gameInfo.player2} />
       <GameStatus gameInfo={gameInfo} user={auth.user} />
       {showResetButton(gameInfo, auth.user, gameInfo.lobbyId)}

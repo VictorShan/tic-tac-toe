@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-
+import styles from '../../../styles/LobbyInactiveCountdown.module.sass'
 
 type propsType = {
   lastMoveDate: Date,
@@ -24,38 +24,24 @@ export default function LobbyInactiveCountdown({ lastMoveDate, callBack }: props
   }
 
   useEffect(() => {
-    let timer
+    const timer = setInterval(() => countdown(timer), 1000)
     if (lastMoveDate.getTime() === 0) {
-      console.log("No timer needed");
       setSeconds(0)
     } else if (Date.now() - lastMoveDate.getTime() > 0) {
-      timer = setInterval(() => {
-        setSeconds(old => {
-          const secLeft = Math.floor(
-            MAX_INACTIVE_SECONDS
-            - (Date.now() - lastMoveDate.getTime()) / 1000
-          )
-          if (old == secLeft) {
-            clearInterval(timer)
-            const normalCountDown = setInterval(() => countdown(normalCountDown), 1000)
-            return secLeft
-          } else if (Math.abs(secLeft) > MAX_INACTIVE_SECONDS) {
-            return 0
-          } else if (old > secLeft) {
-            return old - Math.max(1, Math.floor(Math.abs(old - secLeft) * .1))
-          } else {
-            return old + Math.max(1, Math.floor(Math.abs(old - secLeft) * .1))
-          }
-        })
-      }, UPDATE_TIMER_SPEED)
+      const secLeft = Math.floor(MAX_INACTIVE_SECONDS - (Date.now() - lastMoveDate.getTime()) / 1000)
+      if (secLeft <= MAX_INACTIVE_SECONDS) {
+        setSeconds(secLeft)
+      } else {
+        setSeconds(0)
+      }
     }
     return () => { clearInterval(timer) }
   }, [lastMoveDate])
 
   return (
-    <div>
-      <h6>Timer</h6>
-      <p>Approximate lobby time left: {translateSeconds(seconds)}</p>
+    <div className={styles.timer}>
+      <h6>Inactivity Timer</h6>
+      <p>Lobby will close in approximately {translateSeconds(seconds)} due to inactivity.</p>
     </div>
   )
 }
