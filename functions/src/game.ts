@@ -130,10 +130,10 @@ app.post('/makeMove', async (req, res) => {
   const playerUids = data.players.map((player: { uid: string, displayName: string }) => player.uid)
   if (!playerUids.includes(req.body.uid)) {
     res.status(401).send("Your are not a player!")
-  } else if (data.turn !== req.body.uid) {
-    res.status(401).send("Not your turn!")
   } else if (data.gameStatus) {
     res.status(423).send("Invalid move. Game has ended.")
+  } else if (data.turn !== req.body.uid) {
+    res.status(401).send("Not your turn!")
   } else {
     // User has authorization to make a move
     const response = await makeMove(req.body.uid, req.body.lobbyId, req.body.move, data)
