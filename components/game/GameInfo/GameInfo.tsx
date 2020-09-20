@@ -1,24 +1,27 @@
 import styles from '../../../styles/GameInfo.module.sass'
 import { useAuth } from '../../../utils/Firebase'
 import Button from 'react-bootstrap/Button'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import ModalWarning from '../../ModalWarning'
 import { useRouter } from 'next/router'
 import { useAlert } from '../../../utils/Alert'
 import Scores from './Scores'
 import GameStatus from './GameStatus'
 import { AlertPropsType } from '../../Alerts/AlertTimed'
+import LobbyInactiveCountdown from './LobbyInactiveCountDown'
 
 export type GameInfoType = {
   lobbyId: string
   player1?: userInfo,
   player2?: userInfo,
+  lastMoveDate: Date,
   turn: string,
   gameStatus?: string
 }
 
-export const DEFAULT_INFO_TYPE: GameInfoType = {
+export const DEFAULT_INFO: GameInfoType = {
   lobbyId: "Unknown",
+  lastMoveDate: new Date(0),
   turn: 'Unknown'
 }
 
@@ -56,6 +59,7 @@ export default function GameInfo({ gameInfo }: propsType) {
       <GameStatus gameInfo={gameInfo} user={auth.user} />
       {showResetButton(gameInfo, auth.user, gameInfo.lobbyId)}
       {showJoinGame(auth.user, gameInfo, setShowWarning, addAlert)}
+      <LobbyInactiveCountdown lastMoveDate={gameInfo.lastMoveDate} callBack={() => { setShowWarning(old => old) }}/>
       <ModalWarning
         title={"Warning: Starting a game anonymously"}
         show={showWarning}
@@ -115,7 +119,9 @@ const clearBoard = async (uid: string, lobbyId: string) => {
 const showJoinGame = (user: firebase.User, gameInfo: GameInfoType,
                       setWarning: (show: boolean) => void,
                       addAlert: (data: AlertPropsType) => void) => {
-  if (!gameInfo.player1 || !gameInfo.player2
+  const withinTime = Date.now() - gameInfo.lastMoveDate.getTime()
+                        < parseInt(process.env.NEXT_PUBLIC_MAX_LOBBY_INACTIVITY_HOURS) * 60 * 60 * 1000
+  if (!withinTime || !gameInfo.player1 || !gameInfo.player2
         && (!user
         || (user?.uid !== gameInfo.player1?.uid
         && user?.uid !== gameInfo.player2?.uid))) {

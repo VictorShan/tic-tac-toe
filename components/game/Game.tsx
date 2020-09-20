@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import GameBoard from './GameBoard'
-import GameInfo, { GameInfoType, DEFAULT_INFO_TYPE } from './GameInfo/GameInfo'
+import GameInfo, { GameInfoType, DEFAULT_INFO } from './GameInfo/GameInfo'
 import { useAuth } from "../../utils/Firebase"
 import styles from '../../styles/Game.module.sass'
 import AlertContainer from "../Alerts/AlertContainer"
@@ -9,7 +9,7 @@ import { AlertPropsType } from '../Alerts/AlertTimed'
 export default function Game({ lobbyId }: propsType) {
   const auth = useAuth()
   const doc = auth.getGameDb(lobbyId)
-  const [info, setInfo] = useState<GameInfoType>({ ...DEFAULT_INFO_TYPE, lobbyId })
+  const [info, setInfo] = useState<GameInfoType>({ ...DEFAULT_INFO, lobbyId })
   const [gameBoard, setGameBoard] = useState([['','',''],['','',''],['','','']])
   const [uidIsX, setUidIsX] = useState('')
   const [alertData, setAlertData] = useState([])
@@ -44,9 +44,8 @@ const processDoc = (doc: firebase.firestore.DocumentSnapshot,
                     setGameBoard: (gameBoard: string[][]) => void,
                     uidIsX: string,
                     setUidIsX: (uid: string) => void) => {
- 
   if (!doc.exists) {
-    setInfo({ ...DEFAULT_INFO_TYPE, lobbyId })
+    setInfo({ ...DEFAULT_INFO, lobbyId })
     setGameBoard([['','',''],['','',''],['','','']])
     return
   }
@@ -80,13 +79,16 @@ const formatBoard = (data: firebase.firestore.DocumentData, uidIsX): string[][] 
 }
 
 const updateInfo = (data: firebase.firestore.DocumentData, lobbyId: string, setInfo: (info: GameInfoType) => void) => {
-  const player1 = data.players[0] ? { ...data.players[0], score: data.score[data.players[0].uid]} : DEFAULT_INFO_TYPE.player1
-  const player2 = data.players[1] ? { ...data.players[1], score: data.score[data.players[1].uid]} : DEFAULT_INFO_TYPE.player2
+  const player1 = data.players[0] ? { ...data.players[0], score: data.score[data.players[0].uid]} : DEFAULT_INFO.player1
+  const player2 = data.players[1] ? { ...data.players[1], score: data.score[data.players[1].uid]} : DEFAULT_INFO.player2
+  console.log("Firebase timestamp:", data.lastMoveTime);
+  
   const newData = {
     lobbyId,
     player1,
     player2,
-    turn: data.turn || DEFAULT_INFO_TYPE.turn,
+    turn: data.turn || DEFAULT_INFO.turn,
+    lastMoveDate: data.lastMoveTime.toDate(),
     gameStatus: data.gameStatus
   }
   setInfo(newData)
