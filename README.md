@@ -21,6 +21,7 @@ One of the players must be in incognito mode/private mode or on a different brow
 ## Differences in Version 2
 - Replay/multiple matches per lobby
 - Mobile friendly
+- Spectate game
 
 ## Future Features
 - Automatic matchmaking
