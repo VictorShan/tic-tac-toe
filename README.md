@@ -1,30 +1,30 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Tic-Tac-Toe
+Realtime, multiplayer tic-tac-toe game using firebase.
 
-## Getting Started
+This project is still incomplete. There are additional features that will be added and bugs that will be fixed.
+So far, the basic features of the project works.
 
-First, run the development server:
+## How to play
 
-```bash
-npm run dev
-# or
-yarn dev
-```
+Click the link to go to the game page. (It might take a second for servers to spin up)
+ - [Version 1: https://tic-tac-toe-82af8.web.app/](https://tic-tac-toe-82af8.web.app/)
+ - [Version 2: https://tic-tac-toe-nextjs.web.app/](https://tic-tac-toe-nextjs.web.app/)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+To play, enter a lobby ID to create or enter a lobby. Lobbies will be recycled after 3 hours.
+Another player must also enter the same lobby ID to join your game. Once they enter, the game starts.
+There is no indicator for whether or not the opponent is still there. This feature will be added soon.
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+Once the game ends, players will need to create a new lobby to play again.
 
-## Learn More
+One of the players must be in incognito mode/private mode or on a different browsers (Chrome, Firefox, etc.) or using a different device to play against each other.
 
-To learn more about Next.js, take a look at the following resources:
+## Differences in Version 2
+- Replay/multiple matches per lobby
+- Mobile friendly
+- Spectate game
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/import?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## Future Features
+- Automatic matchmaking
+- Play a game locally on the same device/browser
+- Simple AI to play against
+- PWA
