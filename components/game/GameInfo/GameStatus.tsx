@@ -1,5 +1,5 @@
 import { GameInfoType } from './GameInfo'
-
+import firebase from 'firebase/app'
 
 type propsType = {
   gameInfo: GameInfoType,

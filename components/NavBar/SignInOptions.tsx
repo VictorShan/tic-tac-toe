@@ -4,6 +4,7 @@ import NavDropdown from 'react-bootstrap/NavDropdown'
 import { useAuth, AuthType } from '../../utils/Firebase'
 import cookie from 'js-cookie'
 import { useEffect } from 'react'
+import firebase from 'firebase/app'
 
 export default function SignInOptions() {
   const router = useRouter()

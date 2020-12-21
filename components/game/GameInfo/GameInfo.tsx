@@ -9,6 +9,7 @@ import Scores from './Scores'
 import GameStatus from './GameStatus'
 import { AlertPropsType } from '../../Alerts/AlertTimed'
 import LobbyInactiveCountdown from './LobbyInactiveCountdown'
+import firebase from 'firebase'
 
 export type GameInfoType = {
   lobbyId: string

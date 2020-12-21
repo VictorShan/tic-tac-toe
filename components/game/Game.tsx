@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import firebase from 'firebase/app'
 import GameBoard from './GameBoard'
 import GameInfo, { GameInfoType, DEFAULT_INFO } from './GameInfo/GameInfo'
 import { useAuth } from "../../utils/Firebase"
@@ -51,6 +52,8 @@ const processDoc = (doc: firebase.firestore.DocumentSnapshot,
             > MAX_LOBBY_INACTIVE_SECONDS) {
     setInfo({ ...DEFAULT_INFO, lobbyId })
     setGameBoard([['','',''],['','',''],['','','']])
+    console.log("No doc", lobbyId);
+    
     return
   }
   const data = doc.data()
