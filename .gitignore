@@ -38,3 +38,5 @@ functions/firebase-debug.log
 functions/ui-debug.log
 ui-debug.log
 firestore-debug.log
+functions/src/game.ts
+firebase-debug.log

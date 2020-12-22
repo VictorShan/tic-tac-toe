@@ -164,6 +164,7 @@ async function makeMove(uid: string, lobbyId: string,
         // Switch Player Turn
         newData["turn"] = data.players[0].uid === uid ? data.players[1].uid : data.players[0].uid
       }
+      newData["lastMoveTime"] = admin.firestore.FieldValue.serverTimestamp()
       await lobbyRef.update(newData)
       return { status: 202, message: `Move to ${move} made.`}
     } catch (err) {
