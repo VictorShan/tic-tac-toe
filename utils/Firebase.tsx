@@ -17,6 +17,7 @@ if (firebase.apps.length == 0) {
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
     measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
   })
+  // firebase.firestore().useEmulator("localhost", 8080)
 }
 
 // firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE)
