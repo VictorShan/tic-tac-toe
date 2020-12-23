@@ -3,7 +3,6 @@ import GameBoard from '../game/GameBoard'
 import Agent from "./Agent"
 
 export default function AIGame() {
-    // const boardData = [['','',''],['','',''],['','','']]
     const [boardData, setBoardData] = useState([['','',''],['','',''],['','','']])
     const [yourTurn, setYourTurn] = useState(true)
     const handleClick = (row: number, col: number) => {
