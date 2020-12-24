@@ -1,14 +1,15 @@
 const INFINITY = Math.pow(10, 1000)
 
 export default function Agent(boardData: string[][]) {   
-    return hasWon(boardData) ? null : alphaBeta(boardData, -INFINITY, INFINITY, 1,  true)[0]
+    return hasWon(boardData) ? null : alphaBeta(boardData, -INFINITY, INFINITY, -1,  true)[0]
 }
 
 function alphaBeta(boardData, alpha, beta, depth, isOMove) {
-
+    // console.log(depth);
+    
     if (depth === 0 || hasWon(boardData)) {
-        console.log("reached bottom", boardData);
-        
+        // console.log("reached bottom", boardData);
+        // console.log([null, staticEval(boardData)]) 
         return [null, staticEval(boardData)]
     }
     let bestScore = isOMove ? -INFINITY : INFINITY
@@ -43,6 +44,11 @@ function alphaBeta(boardData, alpha, beta, depth, isOMove) {
             }
         }
     }
+    if (Math.abs(bestScore) === INFINITY) {
+        console.log([alpha, beta])
+        console.log([bestMove, bestScore], boardData) 
+    }
+       
     return [bestMove, bestScore]
 }
 
@@ -83,6 +89,7 @@ function getArrs(boardData: string[][]) {
 
 function hasWon(boardData: string[][]) {
     let arrs = getArrs(boardData)
+    let mustTie = true
     for (let arr of arrs) {
         let Os = arr.filter(e => e === "O").length
         let Xs = arr.filter(e => e === "X").length
@@ -92,7 +99,11 @@ function hasWon(boardData: string[][]) {
         if (Xs === 3) {
             return "X"
         }
+        if (!Os || !Xs) {
+            mustTie = false
+        }
     }
+    return mustTie
 }
 
 function evaluateArr(arrs) {
