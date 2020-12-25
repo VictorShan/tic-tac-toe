@@ -22,7 +22,7 @@ function alphaBeta(boardData, alpha, beta, depth, isOMove) {
             if (newScore > bestScore) {
                 bestScore = newScore
                 bestMove = move
-                if (newScore > bestScore) {
+                if (bestScore > alpha) {
                     alpha = bestScore
                     if (alpha >= beta) {
                         break
@@ -43,12 +43,7 @@ function alphaBeta(boardData, alpha, beta, depth, isOMove) {
                 }
             }
         }
-    }
-    if (Math.abs(bestScore) === INFINITY) {
-        console.log([alpha, beta])
-        console.log([bestMove, bestScore], boardData) 
-    }
-       
+    }       
     return [bestMove, bestScore]
 }
 

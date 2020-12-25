@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import GameBoard from '../game/GameBoard'
 import Agent from "./Agent"
+import AIGameInfo from "./AIGameInfo"
+import styles from '../../styles/AIGame.module.sass'
 
 export default function AIGame() {
     const [boardData, setBoardData] = useState([['','',''],['','',''],['','','']])
@@ -13,10 +15,15 @@ export default function AIGame() {
             } else {
                 oldBoard[row][col] = "X"
                 setYourTurn(turn => !turn)
-                setTimeout(aiMove, 1000)
+                setTimeout(aiMove, 500)
                 return oldBoard // use [...oldBoard] because this doesn't trigger refresh
             }
         })
+    }
+
+    const clearBoard = () => {
+        setBoardData([['','',''],['','',''],['','','']])
+        setYourTurn(true)
     }
 
     const aiMove = () => {
@@ -31,8 +38,14 @@ export default function AIGame() {
     }
 
     return (
-        <div>
-            <GameBoard boardData={boardData} onClick={handleClick}/>
+        <div className={styles.container}>
+            <div className={styles.leftContainer}>
+                <GameBoard boardData={boardData} onClick={handleClick}/>
+            </div>
+            <div className={styles.rightContainer}>
+                <AIGameInfo clearBoard={clearBoard} />
+                <div className={styles.addSpace}></div>
+            </div>
         </div>
     )
 }

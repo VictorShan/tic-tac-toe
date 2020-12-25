@@ -3,7 +3,6 @@ import Col from 'react-bootstrap/Col'
 import Row from 'react-bootstrap/Row'
 import Image from 'react-bootstrap/Image'
 import styles from '../../styles/GameBoard.module.sass'
-import { useEffect } from 'react'
 
 const EMPTY_BOARD = [
   ['','',''],
