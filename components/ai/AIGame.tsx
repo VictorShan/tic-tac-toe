@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import GameBoard from '../game/GameBoard'
-import Agent from "./Agent"
+import Agent, { hasWon } from "./Agent"
 import AIGameInfo from "./AIGameInfo"
 import styles from '../../styles/AIGame.module.sass'
 
@@ -31,7 +31,9 @@ export default function AIGame() {
         console.log(move, boardData);
         if (move) {
             boardData[move[0]][move[1]] = "O"
-            setYourTurn(turn => !turn)
+            setBoardData(old => [...boardData])
+            if (!hasWon(boardData))
+                setYourTurn(turn => !turn)
         } else {
             console.log("no moves found!");
         }        

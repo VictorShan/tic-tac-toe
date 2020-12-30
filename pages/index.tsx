@@ -17,7 +17,7 @@ export default function Home() {
         </div>
         <div>
           <Link href={"/game"} passHref><Button variant='outline-primary' className={styles.button}>Multiplayer</Button></Link>
-          <Button href={"/game/ai"} variant='outline-primary' className={styles.button}>Play against AI</Button>
+          <Button href={"/ai"} variant='outline-primary' className={styles.button}>Play against AI</Button>
         </div>
       </main>
     </>

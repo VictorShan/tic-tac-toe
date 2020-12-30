@@ -82,7 +82,7 @@ function getArrs(boardData: string[][]) {
     return [...boardData, lrDiagonal, rlDiagonal, ...columns]
 }
 
-function hasWon(boardData: string[][]) {
+export function hasWon(boardData: string[][]) {
     let arrs = getArrs(boardData)
     let mustTie = true
     for (let arr of arrs) {
