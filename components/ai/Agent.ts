@@ -14,7 +14,7 @@ function alphaBeta(boardData, alpha, beta, depth, isOMove) {
         let newBoard = copyBoard(boardData)
         if (isOMove) {
             newBoard[move[0]][move[1]] = "O"
-            let [tmp, newScore] = alphaBeta(newBoard, alpha, beta, depth - 1, false)
+            let [_tmp, newScore] = alphaBeta(newBoard, alpha, beta, depth - 1, false)
             if (newScore > bestScore) {
                 bestScore = newScore
                 bestMove = move
@@ -27,7 +27,7 @@ function alphaBeta(boardData, alpha, beta, depth, isOMove) {
             }
         } else {
             newBoard[move[0]][move[1]] = "X"
-            let [tmp, newScore] = alphaBeta(newBoard, alpha, beta, depth - 1, true)
+            let [_tmp, newScore] = alphaBeta(newBoard, alpha, beta, depth - 1, true)
             if (newScore < bestScore) {
                 bestScore = newScore
                 bestMove = move

@@ -152,10 +152,12 @@ async function makeMove(uid: string, lobbyId: string,
   } else {
     board[move.row][move.col] = uid
     try {
-      const winner = hasWon(getArrs(board), data.players[0].uid, data.players[1].uid) //checkWin(data.board)
+      const winner = hasWon(getArrs([board[0], board[1], board[2]]), data.players[0].uid, data.players[1].uid) //checkWin(data.board)
       const newData: object = { board }
+      console.log("Winner?", winner)
       if (winner) {
         // Update Score?
+        
         if (winner !== 'tie') {
           newData[`score.${winner}`] = data.score[winner] + 1
         }
@@ -169,6 +171,8 @@ async function makeMove(uid: string, lobbyId: string,
       await lobbyRef.update(newData)
       return { status: 202, message: `Move to ${move} made.`}
     } catch (err) {
+      console.error(err);
+      
       return { status: 500, message: "Server couldn't update."}
     }
     

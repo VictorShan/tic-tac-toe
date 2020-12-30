@@ -7,6 +7,10 @@ import styles from '../../styles/Game.module.sass'
 import AlertContainer from "../Alerts/AlertContainer"
 import { AlertPropsType } from '../Alerts/AlertTimed'
 
+const FUNCTIONS_URL = process.env.NEXT_PUBLIC_TESTING === 'true' ? 
+    process.env.NEXT_PUBLIC_FIREBASE_FUNCTION_API_TEST :
+    process.env.NEXT_PUBLIC_FIREBASE_FUNCTION_API
+
 export default function Game({ lobbyId }: propsType) {
   const auth = useAuth()
   const doc = auth.getGameDb(lobbyId)
@@ -104,7 +108,7 @@ const makeMove = async(uid: string, lobbyId: string, row: number, col: number,
                     setAlertData: (callback?: (oldData: AlertPropsType[]) => AlertPropsType[] | AlertPropsType[]) => void) => {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_FIREBASE_FUNCTION_API}/makeMove`,
+      `${FUNCTIONS_URL}/makeMove`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json"},

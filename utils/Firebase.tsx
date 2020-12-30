@@ -17,7 +17,8 @@ if (firebase.apps.length == 0) {
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
     measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
   })
-  if (process.env.NEXT_PUBLIC_TEST === 'true') {
+  if (process.env.NEXT_PUBLIC_TESTING === 'true') {
+    console.log("Using testing emulator")
     firebase.firestore().useEmulator("localhost", 8080)
   }
 }

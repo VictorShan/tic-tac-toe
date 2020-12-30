@@ -11,6 +11,10 @@ import { AlertPropsType } from '../../Alerts/AlertTimed'
 import LobbyInactiveCountdown from './LobbyInactiveCountdown'
 import firebase from 'firebase'
 
+const FUNCTIONS_URL = process.env.NEXT_PUBLIC_TESTING === 'true' ? 
+    process.env.NEXT_PUBLIC_FIREBASE_FUNCTION_API_TEST :
+    process.env.NEXT_PUBLIC_FIREBASE_FUNCTION_API
+
 export type GameInfoType = {
   lobbyId: string
   player1?: userInfo,
@@ -102,7 +106,7 @@ const clearBoard = async (uid: string, lobbyId: string) => {
       throw Error("Not signed in.")
     }
     const res = await fetch(
-        `${process.env.NEXT_PUBLIC_FIREBASE_FUNCTION_API}/clearBoard`,
+        `${FUNCTIONS_URL}/clearBoard`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json"},
@@ -151,7 +155,7 @@ const enterLobby = async (lobbyId: string, uid: string, displayName: string,
                           addAlert: (data: AlertPropsType) => void): Promise<boolean> => {
   try {
     const result = await fetch(
-      `${process.env.NEXT_PUBLIC_FIREBASE_FUNCTION_API}/enterLobby`,
+      `${FUNCTIONS_URL}/enterLobby`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json"},
