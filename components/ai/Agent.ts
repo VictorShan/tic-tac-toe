@@ -88,7 +88,7 @@ export function hasWon(boardData: string[][], uid1: string, uid2: string): strin
             return uid1
         }
         if (uid2s === 3) {
-            return "X"
+            return uid2
         }
         if (!uid1s || !uid2s) {
             mustTie = false

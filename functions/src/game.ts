@@ -154,7 +154,6 @@ async function makeMove(uid: string, lobbyId: string,
     try {
       const winner = hasWon(getArrs([board[0], board[1], board[2]]), data.players[0].uid, data.players[1].uid) //checkWin(data.board)
       const newData: object = { board }
-      console.log("Winner?", winner)
       if (winner) {
         // Update Score?
         
