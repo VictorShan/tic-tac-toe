@@ -151,7 +151,7 @@ async function makeMove(uid: string, lobbyId: string,
   } else {
     board[move.row][move.col] = uid
     try {
-      const winner = checkWin(data.board)
+      const winner = hasWon(data.board, data.players[0].uid, data.players[1].uid) //checkWin(data.board)
       const newData: object = { board }
       if (winner) {
         // Update Score?
@@ -172,6 +172,36 @@ async function makeMove(uid: string, lobbyId: string,
     }
     
   }
+}
+
+function getArrs(boardData: string[][]) {
+  let lrDiagonal = [boardData[0][0], boardData[1][1], boardData[2][2]]
+  let rlDiagonal = [boardData[0][2], boardData[1][1], boardData[2][1]]
+  let columns = []
+  for (let col = 0; col < 3; col++) {
+      columns.push([boardData[0][col], boardData[1][col], boardData[2][col]])
+  }
+  return [...boardData, lrDiagonal, rlDiagonal, ...columns]
+}
+
+function hasWon(board: { "0": string[], "1": string[], "2": string[] }, uid1: string, uid2: string): string | false {
+  let boardData = getArrs([board[0], board[1], board[2]])
+  let arrs = getArrs(boardData)
+  let mustTie: string | boolean= "tie"
+  for (let arr of arrs) {
+      let uid1s = arr.filter(e => e === uid1).length
+      let uid2s = arr.filter(e => e === uid2).length
+      if (uid1s === 3) {
+          return uid1
+      }
+      if (uid2s === 3) {
+          return uid2
+      }
+      if (!uid1s || !uid2s) {
+          mustTie = false
+      }
+  }
+  return mustTie
 }
 
 function checkWin(board: { "0": string[], "1": string[], "2": string[] }): string | false {
