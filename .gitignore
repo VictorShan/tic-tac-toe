@@ -34,7 +34,7 @@ yarn-error.log*
 .vercel
 functions/firebase-debug.log
 .vscode/settings.json
-.firebase/hosting.b3V0.cache
+.firebase
 functions/ui-debug.log
 ui-debug.log
 firestore-debug.log

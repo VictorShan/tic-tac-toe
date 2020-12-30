@@ -1,15 +1,11 @@
 const INFINITY = Math.pow(10, 1000)
 
 export default function Agent(boardData: string[][]) {   
-    return hasWon(boardData) ? null : alphaBeta(boardData, -INFINITY, INFINITY, -1,  true)[0]
+    return hasWon(boardData, "O", "X") ? null : alphaBeta(boardData, -INFINITY, INFINITY, -1,  true)[0]
 }
 
 function alphaBeta(boardData, alpha, beta, depth, isOMove) {
-    // console.log(depth);
-    
-    if (depth === 0 || hasWon(boardData)) {
-        // console.log("reached bottom", boardData);
-        // console.log([null, staticEval(boardData)]) 
+    if (depth === 0 || hasWon(boardData, "O", "X")) {
         return [null, staticEval(boardData)]
     }
     let bestScore = isOMove ? -INFINITY : INFINITY
@@ -68,13 +64,13 @@ function getMoves(boardData: string[][]) {
 }
 
 // maximize O, minimize X
-function staticEval(boardData: string[][]) {
-    return evaluateArr(getArrs(boardData))
+export function staticEval(boardData: string[][]) {
+    return evaluateArr(getArrs(boardData), "O", "X")
 }
 
-function getArrs(boardData: string[][]) {
+export function getArrs(boardData: string[][]) {
     let lrDiagonal = [boardData[0][0], boardData[1][1], boardData[2][2]]
-    let rlDiagonal = [boardData[0][2], boardData[1][1], boardData[2][1]]
+    let rlDiagonal = [boardData[0][2], boardData[1][1], boardData[2][0]]
     let columns = []
     for (let col = 0; col < 3; col++) {
         columns.push([boardData[0][col], boardData[1][col], boardData[2][col]])
@@ -82,45 +78,45 @@ function getArrs(boardData: string[][]) {
     return [...boardData, lrDiagonal, rlDiagonal, ...columns]
 }
 
-export function hasWon(boardData: string[][]) {
+export function hasWon(boardData: string[][], uid1: string, uid2: string): string | "tie" | false {
     let arrs = getArrs(boardData)
-    let mustTie = true
+    let mustTie: "tie" | false = "tie"
     for (let arr of arrs) {
-        let Os = arr.filter(e => e === "O").length
-        let Xs = arr.filter(e => e === "X").length
-        if (Os === 3) {
-            return "O"
+        let uid1s = arr.filter(e => e === uid1).length
+        let uid2s = arr.filter(e => e === uid2).length
+        if (uid1s === 3) {
+            return uid1
         }
-        if (Xs === 3) {
+        if (uid2s === 3) {
             return "X"
         }
-        if (!Os || !Xs) {
+        if (!uid1s || !uid2s) {
             mustTie = false
         }
     }
     return mustTie
 }
 
-function evaluateArr(arrs) {
+export function evaluateArr(arrs: string[][], uid1: string, uid2: string) {
     let score = 0
     for (let arr of arrs) {
-        let Os = arr.filter(e => e === 'O').length
-        let Xs = arr.filter(e => e === 'X').length
-        if (Xs === 0) {
-            if (Os === 3) {
+        let uid1s = arr.filter(e => e === uid1).length
+        let uid2s = arr.filter(e => e === uid2).length
+        if (uid2s === 0) {
+            if (uid1s === 3) {
                 score += 100
-            } else if (Os === 2) {
+            } else if (uid1s === 2) {
                 score += 10
-            } else if (Os === 1) {
+            } else if (uid1s === 1) {
                 score += 1
             }
         }
-        if (Os === 0) {
-            if (Xs === 3) {
+        if (uid1s === 0) {
+            if (uid2s === 3) {
                 score -= 100
-            } else if (Xs === 2) {
+            } else if (uid2s === 2) {
                 score -= 10
-            } else if (Xs === 1) {
+            } else if (uid2s === 1) {
                 score -= 1
             }
         }

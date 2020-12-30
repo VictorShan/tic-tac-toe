@@ -10,7 +10,7 @@ export default function AIGame() {
     const handleClick = (row: number, col: number) => {
         setBoardData(oldBoard => {
             if (!yourTurn || oldBoard[row][col]) {
-                console.log("Can't move here", oldBoard);
+                // can't move here
                 return oldBoard
             } else {
                 oldBoard[row][col] = "X"
@@ -28,14 +28,13 @@ export default function AIGame() {
 
     const aiMove = () => {
         let move = Agent(boardData)
-        console.log(move, boardData);
         if (move) {
             boardData[move[0]][move[1]] = "O"
             setBoardData(old => [...boardData])
-            if (!hasWon(boardData))
+            if (!hasWon(boardData, "O", "X"))
                 setYourTurn(turn => !turn)
         } else {
-            console.log("no moves found!");
+            // No moves found!
         }        
     }
 

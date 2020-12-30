@@ -1,6 +1,7 @@
 import * as express from 'express'
 import * as admin from 'firebase-admin'
 import * as cors from 'cors'
+import { hasWon, getArrs } from '../../components/ai/Agent'
 
 const LOBBY_RECYCLE_HRS = 3
 const CLEARED_BOARD = {
@@ -8,7 +9,7 @@ const CLEARED_BOARD = {
   1: ['','',''],
   2: ['','','']
 }
-const INDEXES = ["0", "1", "2"]
+// const INDEXES = ["0", "1", "2"]
 
 admin.initializeApp()
 
@@ -151,7 +152,7 @@ async function makeMove(uid: string, lobbyId: string,
   } else {
     board[move.row][move.col] = uid
     try {
-      const winner = hasWon(data.board, data.players[0].uid, data.players[1].uid) //checkWin(data.board)
+      const winner = hasWon(getArrs(board), data.players[0].uid, data.players[1].uid) //checkWin(data.board)
       const newData: object = { board }
       if (winner) {
         // Update Score?
@@ -174,63 +175,33 @@ async function makeMove(uid: string, lobbyId: string,
   }
 }
 
-function getArrs(boardData: string[][]) {
-  let lrDiagonal = [boardData[0][0], boardData[1][1], boardData[2][2]]
-  let rlDiagonal = [boardData[0][2], boardData[1][1], boardData[2][1]]
-  let columns = []
-  for (let col = 0; col < 3; col++) {
-      columns.push([boardData[0][col], boardData[1][col], boardData[2][col]])
-  }
-  return [...boardData, lrDiagonal, rlDiagonal, ...columns]
-}
+// function checkWin(board: { "0": string[], "1": string[], "2": string[] }): string | false {
+//   for (let i of INDEXES) {
+//     // Horizontal and vertical
+//     if (board[i][0] && board[i][0] === board[i][1] && board[i][1] === board[i][2]) {
+//       return board[i][0]
+//     } else if (board[0][i] && board[0][i] === board[1][i] && board[1][i] === board[2][i]) {
+//       return board[i][0]
+//     }
+//   }
 
-function hasWon(board: { "0": string[], "1": string[], "2": string[] }, uid1: string, uid2: string): string | false {
-  let boardData = getArrs([board[0], board[1], board[2]])
-  let arrs = getArrs(boardData)
-  let mustTie: string | boolean= "tie"
-  for (let arr of arrs) {
-      let uid1s = arr.filter(e => e === uid1).length
-      let uid2s = arr.filter(e => e === uid2).length
-      if (uid1s === 3) {
-          return uid1
-      }
-      if (uid2s === 3) {
-          return uid2
-      }
-      if (!uid1s || !uid2s) {
-          mustTie = false
-      }
-  }
-  return mustTie
-}
+//   // Diagonals
+//   if (board[0][0] && board[0][0] === board[1][1] && board[1][1] === board[2][2]) {
+//     return board[0][0]
+//   } else if (board[0][2] && board[0][2] === board[1][1] && board[1][1] === board[2][0]) {
+//     return board[0][2]
+//   }
+//   return checkDraw(board)
+// }
 
-function checkWin(board: { "0": string[], "1": string[], "2": string[] }): string | false {
-  for (let i of INDEXES) {
-    // Horizontal and vertical
-    if (board[i][0] && board[i][0] === board[i][1] && board[i][1] === board[i][2]) {
-      return board[i][0]
-    } else if (board[0][i] && board[0][i] === board[1][i] && board[1][i] === board[2][i]) {
-      return board[i][0]
-    }
-  }
-
-  // Diagonals
-  if (board[0][0] && board[0][0] === board[1][1] && board[1][1] === board[2][2]) {
-    return board[0][0]
-  } else if (board[0][2] && board[0][2] === board[1][1] && board[1][1] === board[2][0]) {
-    return board[0][2]
-  }
-  return checkDraw(board)
-}
-
-function checkDraw(board: { "0": string[], "1": string[], "2": string[] }) {
-  for (let rowIdx in board) {
-    for (let col of board[rowIdx]) {
-      if (!col) return false
-    }
-  }
-  return 'tie'
-}
+// function checkDraw(board: { "0": string[], "1": string[], "2": string[] }) {
+//   for (let rowIdx in board) {
+//     for (let col of board[rowIdx]) {
+//       if (!col) return false
+//     }
+//   }
+//   return 'tie'
+// }
 
 // Clear Board
 app.post('/clearBoard', async (req, res) => {
