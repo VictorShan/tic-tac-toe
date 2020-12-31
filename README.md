@@ -9,6 +9,7 @@ So far, the basic features of the project works.
 Click the link to go to the game page. (It might take a second for servers to spin up)
  - [Version 1: https://tic-tac-toe-82af8.web.app/](https://tic-tac-toe-82af8.web.app/)
  - [Version 2: https://tic-tac-toe-nextjs.web.app/](https://tic-tac-toe-nextjs.web.app/)
+ - [Version 3: https://tic-tac-toe.victorshan.vercel.app/](https://tic-tac-toe.victorshan.vercel.app/)
 
 To play, enter a lobby ID to create or enter a lobby. Lobbies will be recycled after 3 hours.
 Another player must also enter the same lobby ID to join your game. Once they enter, the game starts.
