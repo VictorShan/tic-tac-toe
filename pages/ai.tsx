@@ -12,7 +12,6 @@ export default function ai() {
             <main>
                 <AIGame/>
             </main>
-            
         </>
     )
 }
