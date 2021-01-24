@@ -8,7 +8,7 @@ export default function NavBar() {
       <Link href='/#home' passHref>
         <Navbar.Brand href="/#home">
           <img
-            src="/vercel.svg"
+            src="/images/hash.svg"
             width="30"
             height="30"
             className="d-inline-block align-top"
