@@ -13,7 +13,7 @@
     "@google-cloud/storage": "^5.7.0",
     "bootstrap": "^4.5.3",
     "firebase": "^8.2.1",
-    "firebase-admin": "^9.4.2",
+    "firebase-admin": "^11.4.1",
     "firebase-functions": "^3.13.0",
     "js-cookie": "^2.2.1",
     "next": "^10.0.4",
